@@ -1,0 +1,14 @@
+WTS MERCH · WEB PÚBLICA V19 CONECTADA
+
+Esta versión ya está configurada para consultar el catálogo real del Sistema de Gestión.
+
+API configurada:
+Apps Script /exec (configurada internamente en data/config.json)
+
+La web:
+- muestra únicamente productos marcados como PUBLICADO;
+- usa la imagen Principal y las imágenes seleccionadas en Publicación web;
+- no utiliza productos demo si la API no responde;
+- no debe mostrar el nombre del proveedor al cliente.
+
+Paquete listo para la siguiente prueba de conexión.

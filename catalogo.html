@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Catálogo | WTS Merch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;1,500;1,600;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header compact">
+  <a class="brand-logo" href="index.html" aria-label="WTS Merch inicio"><img src="assets/logo-wts-principal.png" alt="WTS Merch"></a>
+  <nav class="desktop-nav"><a class="active" href="catalogo.html">Productos</a><a href="index.html#categorias">Categorías</a><a href="index.html#empresa">Nosotros</a></nav>
+  <div class="header-actions"><div class="search-wrap">
+      <input class="search-inline" type="search" placeholder="Buscar productos..." aria-label="Buscar productos">
+      <button class="icon-btn search-open" type="button" aria-label="Buscar">⌕</button>
+    </div><button class="cart-btn cart-open">Carrito <span class="cart-count">0</span></button></div>
+</header>
+
+<main class="catalog-page">
+<section class="catalog-title">
+  <span class="eyebrow">CATÁLOGO</span>
+  <h1 id="catalogHeading">Productos para potenciar tu marca</h1>
+  <p id="catalogIntro">Explorá ideas, filtrá por categoría y armá una selección para solicitar presupuesto.</p>
+  <div id="catalogScope" class="catalog-scope" hidden></div>
+</section>
+
+<section class="catalog-tools">
+  <label class="catalog-search">⌕ <input id="catalogSearch" placeholder="Buscar por nombre o categoría"></label>
+  <button class="mobile-filter" type="button">Filtrar productos</button>
+  <div class="sort-wrap">Ordenar <select id="sortSelect"><option value="featured">Destacados</option><option value="az">A–Z</option><option value="min">Menor mínimo</option></select></div>
+</section>
+
+<section class="catalog-layout">
+  <aside class="filters">
+    <div class="filter-block"><b>Categorías</b><div id="categoryFilters"></div></div>
+    <div class="filter-block">
+      <b>Marcas destacadas</b>
+      <div class="special-filters">
+        <label><input class="brandFilter" type="radio" name="brandFilter" value="Stanley"> Stanley</label>
+        <label><input class="brandFilter" type="radio" name="brandFilter" value="Montagne"> Montagne</label>
+      </div>
+    </div>
+    <div class="filter-block">
+      <b>Colecciones</b>
+      <div class="special-filters">
+        <label><input class="collectionFilter" type="radio" name="collectionFilter" value="Tecnología Premium"> Tecnología Premium</label>
+      </div>
+    </div>
+    <button id="clearFilters" class="clear-filters">Limpiar filtros</button>
+  </aside>
+  <div class="catalog-results">
+    <div class="results-meta"><span id="resultsCount"></span><span class="results-hint">Elegí un producto para ver colores y detalles</span></div>
+    <div class="product-grid catalog-grid" id="catalogGrid"></div>
+  </div>
+</section>
+</main>
+
+<footer class="mini-footer"><div class="brand-logo footer-logo"><img src="assets/logo-wts-white.png" alt="WTS Merch"></div><span>Merchandising corporativo</span><a href="index.html">Volver al inicio</a></footer>
+
+<div class="overlay search-overlay"><button class="overlay-close">×</button><div class="search-panel"><span class="eyebrow">BUSCAR PRODUCTOS</span><input id="globalSearch" placeholder="Ej. termo, mochila, cuaderno..."><div id="searchResults"></div></div></div>
+<aside class="cart-drawer">
+  <div class="drawer-head">
+    <div><span class="eyebrow">TU SELECCIÓN</span><h3>Tu carrito</h3></div>
+    <button type="button" class="drawer-close">×</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="drawer-empty" id="drawerEmpty">Todavía no agregaste productos.</div>
+  <div class="cart-summary" id="cartSummary"></div>
+
+  
+</aside>
+<div class="drawer-backdrop"></div>
+<script src="app.js"></script>
+<button class="back-to-top" aria-label="Volver arriba" title="Volver arriba">↑</button>
+</body></html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Solicitar presupuesto | WTS Merch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;1,500;1,600;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header compact">
+  <a class="brand-logo" href="index.html" aria-label="WTS Merch inicio"><img src="assets/logo-wts-principal.png" alt="WTS Merch"></a>
+  <nav class="desktop-nav"><a href="catalogo.html">Productos</a><a href="index.html#categorias">Categorías</a><a href="index.html#empresa">Nosotros</a></nav>
+  <div class="header-actions"><div class="search-wrap">
+      <input class="search-inline" type="search" placeholder="Buscar productos..." aria-label="Buscar productos">
+      <button class="icon-btn search-open" type="button" aria-label="Buscar">⌕</button>
+    </div><button class="cart-btn cart-open">Carrito <span class="cart-count">0</span></button></div>
+</header>
+
+<main class="quote-page quote-v22">
+  <div class="journey-nav"><a href="catalogo.html">← Seguir comprando</a><a href="index.html">Ir al inicio</a></div>
+  <div class="flow-steps quote-progress"><span id="quoteMark1" class="active">1 · Revisar selección</span><span id="quoteMark2">2 · Datos de solicitud</span><span id="quoteMark3">3 · Confirmar</span></div>
+  <section class="quote-intro"><span class="eyebrow">PRESUPUESTO SIN COMPROMISO</span><h1 id="quoteTitle">Revisá lo que querés cotizar</h1><p id="quoteIntro">Podés solicitar valores sin confirmar una compra y conservar tu selección para seguir comparando.</p></section>
+
+  <section id="quoteStep1" class="quote-stage"><div class="quote-card">
+    <div class="stage-heading"><div><span class="stage-number">01</span><h2>Productos a cotizar</h2></div><a href="catalogo.html">Agregar otro producto</a></div>
+    <div id="quotePreview"></div><div class="quote-total" id="quoteTotal"></div>
+    <div class="quote-notice compact-quote-notice"><b>Solicitar un presupuesto no confirma una compra.</b><p>La propuesta podrá indicar disponibilidad, entrega y vigencia.</p></div>
+    <div class="checkout-stage-actions"><button class="btn primary checkout-main-action" id="toQuoteData">Continuar con mis datos</button></div>
+  </div></section>
+
+  <section id="quoteStep2" class="quote-stage" hidden><div class="quote-card"><div id="quoteError" class="form-error" hidden></div>
+    <div class="stage-heading"><div><span class="stage-number">02</span><h2>Datos de solicitud</h2></div><button type="button" class="text-action" id="backQuoteReview">← Volver a la selección</button></div>
+    <div class="form-grid quote-contact">
+      <label>Nombre y apellido *<input id="quoteName" required placeholder="Tu nombre y apellido" autocomplete="name"></label>
+      <label>Empresa *<input id="quoteCompany" required placeholder="Empresa / organización" autocomplete="organization"></label>
+      <label>CUIT *<input id="quoteCuit" required inputmode="numeric" autocomplete="off" maxlength="13" placeholder="XX-XXXXXXXX-X"></label>
+      <label>Email *<input id="quoteEmail" type="email" required placeholder="nombre@empresa.com" autocomplete="email"></label>
+      <label>Teléfono *<input id="quotePhone" required placeholder="+54 ..." type="tel" autocomplete="tel"></label>
+      <label class="wide">Dirección *<input id="quoteAddress" required placeholder="Calle, número, piso / oficina" autocomplete="street-address"></label>
+      <label>Localidad *<input id="quoteCity" required placeholder="Localidad" autocomplete="address-level2"></label>
+      <label>Código postal *<input id="quotePostal" required placeholder="CP" autocomplete="postal-code"></label>
+    </div>
+    <h2>¿Cómo preferís recibirlo?</h2><div class="choice-row"><label class="choice"><input type="radio" name="quoteChannel" checked value="email"><span><b>Por email</b><small>Práctico para guardar o compartir.</small></span></label><label class="choice"><input type="radio" name="quoteChannel" value="whatsapp"><span><b>Por WhatsApp</b><small>Para continuar la conversación.</small></span></label></div>
+    <div class="form-grid quote-extra"><label>Fecha en que lo necesitás *<input id="quoteDate" type="date" required></label><label>Presupuesto objetivo <span class="optional">(opcional)</span><input id="quoteTarget" placeholder="$"></label></div>
+    <label class="full-label file-field">Adjuntar archivos <span class="optional">(opcional)</span>
+      <input id="quoteFiles" type="file" multiple accept=".pdf,.ai,.eps,.svg,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.zip">
+      <small class="file-help">Podés adjuntar logo, diseño, referencias o documentación.</small>
+      <span class="file-list" id="quoteFileList"></span>
+    </label>
+    <label class="full-label">Observaciones <span class="optional">(opcional)</span><textarea id="quoteComments" rows="4" placeholder="Entrega, condiciones internas u otra información útil..."></textarea></label>
+    <div class="checkout-stage-actions"><button class="btn primary checkout-main-action" id="toQuoteConfirm">Revisar solicitud</button></div>
+  </div></section>
+
+  <section id="quoteStep3" class="quote-stage" hidden><div class="quote-confirm-grid">
+    <div class="quote-card"><div class="stage-heading"><div><span class="stage-number">03</span><h2>Confirmá la solicitud</h2></div><button type="button" class="text-action" id="backQuoteData">Editar datos</button></div><div id="quoteCustomerSummary" class="final-summary"></div><button class="btn primary full quote-submit" id="generateQuote">Solicitar presupuesto</button><p class="checkout-note">Esta versión es una simulación: todavía no envía solicitudes reales.</p></div>
+    <aside class="final-order-card quote-final-order"><h3>Selección</h3><div id="quoteFinalItems"></div><div id="quoteFinalTotal"></div></aside>
+  </div></section>
+
+  <section class="quote-alt-paths"><span class="eyebrow">OTRAS FORMAS DE CONTINUAR</span><div class="quote-alt-grid"><a class="service-path self" href="checkout.html"><span class="path-number">01</span><div><b>Autogestionar compra</b><small>Si ya estás decidido, continuá con el pedido.</small></div><strong>→</strong></a><a class="service-path advisor" href="consulta.html"><span class="path-number">03</span><div><b>Hablar con un asesor</b><small>Para requisitos especiales o alternativas.</small></div><strong>→</strong></a></div></section>
+</main>
+
+<aside class="cart-drawer">
+  <div class="drawer-head">
+    <div><span class="eyebrow">TU SELECCIÓN</span><h3>Tu carrito</h3></div>
+    <button type="button" class="drawer-close" aria-label="Cerrar carrito">×</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="drawer-empty" id="drawerEmpty">Todavía no agregaste productos.</div>
+  <div class="cart-summary" id="cartSummary"></div>
+</aside>
+<div class="drawer-backdrop"></div>
+<script src="app.js"></script>
+<div class="flow-modal" id="quoteSuccess" aria-hidden="true">
+      <div class="flow-modal-card">
+        <span class="flow-icon">✓</span>
+        <span class="eyebrow">PRESUPUESTO SOLICITADO</span>
+        <h2>La solicitud quedó preparada</h2>
+        <p>No se confirmó ninguna compra. En la versión final recibirás el presupuesto por el canal elegido.</p>
+        <div class="status-preview"><span>Estado</span><b>Cotización solicitada</b></div>
+        <div class="success-actions">
+          <a class="btn secondary full" href="catalogo.html">Seguir comprando</a>
+          <a class="btn primary full" href="index.html">Volver al inicio</a>
+        </div>
+      </div>
+    </div><button class="back-to-top" aria-label="Volver arriba" title="Volver arriba">↑</button>
+</body></html>

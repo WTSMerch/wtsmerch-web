@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Consulta | WTS Merch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;1,500;1,600;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="site-header compact">
+  <a class="brand-logo" href="index.html" aria-label="WTS Merch inicio"><img src="assets/logo-wts-principal.png" alt="WTS Merch"></a>
+  <nav class="desktop-nav"><a href="catalogo.html">Productos</a><a href="index.html#categorias">Categorías</a><a href="index.html#empresa">Nosotros</a></nav>
+  <div class="header-actions"><div class="search-wrap">
+      <input class="search-inline" type="search" placeholder="Buscar productos..." aria-label="Buscar productos">
+      <button class="icon-btn search-open" type="button" aria-label="Buscar">⌕</button>
+    </div><button class="cart-btn cart-open">Carrito <span class="cart-count">0</span></button></div>
+</header>
+<main class="consult-page advisor-flow-page">
+  <div class="journey-nav">
+    <a href="catalogo.html">← Seguir explorando</a>
+    <a href="index.html">Ir al inicio</a>
+  </div>
+
+  <div class="advisor-flow-shell">
+    <div class="advisor-flow-head">
+      <div>
+        <span class="eyebrow">ASESORAMIENTO</span>
+        <h1 id="advisorTitle">¿En qué podemos ayudarte?</h1>
+        <p id="advisorIntro">Podés consultar por tu selección actual o contarnos una necesidad desde cero.</p>
+      </div>
+      <div class="advisor-progress" aria-label="Progreso">
+        <span id="advisorMark1" class="active"><b>1</b><small>Necesidad</small></span>
+        <i></i>
+        <span id="advisorMark2"><b>2</b><small>Datos</small></span>
+        <i></i>
+        <span id="advisorMark3"><b>3</b><small>Confirmar</small></span>
+      </div>
+    </div>
+
+    <div id="consultError" class="form-error" hidden></div>
+
+    <section id="advisorStep1" class="advisor-step">
+      <div class="advisor-step-grid">
+        <div class="advisor-selection-card">
+          <div class="advisor-section-title">
+            <span class="eyebrow">TU SELECCIÓN</span>
+            <h2>Productos asociados</h2>
+          </div>
+          <div id="consultSelection" class="consult-selection"></div>
+          <div id="consultTotal" class="consult-total"></div>
+          <a class="text-link" href="catalogo.html">Agregar o cambiar productos →</a>
+        </div>
+
+        <div class="advisor-intent-card">
+          <div class="advisor-section-title">
+            <span class="eyebrow">TIPO DE AYUDA</span>
+            <h2>Decinos cómo querés avanzar</h2>
+          </div>
+
+          <div class="consult-options advisor-options">
+            <label class="choice big">
+              <input type="radio" name="consultType" checked value="mismos">
+              <span><b>Consultar por estos productos</b><small>Disponibilidad, cantidades, tiempos o detalles del pedido.</small></span>
+            </label>
+            <label class="choice big">
+              <input type="radio" name="consultType" value="alternativas">
+              <span><b>Quiero ver alternativas</b><small>Opciones similares por estilo, presupuesto, cantidad o fecha.</small></span>
+            </label>
+            <label class="choice big">
+              <input type="radio" name="consultType" value="idea">
+              <span><b>Busco algo que no está en el catálogo</b><small>Contanos la idea y buscamos una opción adecuada.</small></span>
+            </label>
+          </div>
+
+          <button class="btn primary full" id="toAdvisorData">Continuar</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="advisorStep2" class="advisor-step" hidden>
+      <div class="advisor-form-card">
+        <div class="advisor-section-title">
+          <span class="eyebrow">CONTEXTO DEL PROYECTO</span>
+          <h2>Lo necesario para orientarte mejor</h2>
+        </div>
+
+        <div class="form-grid">
+          <label>Nombre y apellido *<input id="consultName" required placeholder="Tu nombre y apellido" autocomplete="name"></label>
+          <label>Empresa *<input id="consultCompany" required placeholder="Empresa" autocomplete="organization"></label>
+          <label>CUIT *<input id="consultCuit" required inputmode="numeric" autocomplete="off" maxlength="13" placeholder="XX-XXXXXXXX-X"></label>
+          <label>Email *<input id="consultEmail" type="email" required placeholder="nombre@empresa.com" autocomplete="email"></label>
+          <label>Teléfono *<input id="consultPhone" required placeholder="+54 ..." type="tel" autocomplete="tel"></label>
+          <label class="wide">Dirección *<input id="consultAddress" required placeholder="Calle, número, piso / oficina" autocomplete="street-address"></label>
+          <label>Localidad *<input id="consultCity" required placeholder="Localidad" autocomplete="address-level2"></label>
+          <label>Código postal *<input id="consultPostal" required placeholder="CP" autocomplete="postal-code"></label>
+        </div>
+
+        <div class="form-grid advisor-extra">
+          <label>Cantidad estimada <span class="optional">(opcional)</span><input id="consultQty" inputmode="numeric" placeholder="Ej. 100"></label>
+          <label>Fecha en que lo necesitás *<input id="consultDate" type="date" required></label>
+          <label>Presupuesto objetivo <span class="optional">(opcional)</span><input id="consultBudget" placeholder="$"></label>
+          <label>Tipo de acción <span class="optional">(opcional)</span>
+            <select id="consultUse">
+              <option value="">Seleccionar</option>
+              <option>Regalo corporativo</option>
+              <option>Evento</option>
+              <option>Onboarding</option>
+              <option>Equipo interno</option>
+              <option>Campaña / promoción</option>
+              <option>Otro</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="full-label file-field">Adjuntar archivos <span class="optional">(opcional)</span>
+          <input id="consultFiles" type="file" multiple accept=".pdf,.ai,.eps,.svg,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.zip">
+          <small class="file-help">Podés adjuntar logo, diseño, referencias o documentación.</small>
+          <span class="file-list" id="consultFileList"></span>
+        </label>
+
+        <label class="full-label">Contanos un poco más <span class="optional">(opcional)</span>
+          <textarea id="consultComments" rows="5" placeholder="Qué estás buscando, preferencias, requisitos, contexto del proyecto o cualquier dato que ayude a orientarnos."></textarea>
+        </label>
+
+        <div class="advisor-nav-actions">
+          <button class="btn secondary" id="backAdvisorNeed">← Volver</button>
+          <button class="btn primary" id="toAdvisorConfirm">Revisar consulta</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="advisorStep3" class="advisor-step" hidden>
+      <div class="advisor-confirm-grid">
+        <div class="advisor-confirm-card">
+          <span class="eyebrow">RESUMEN</span>
+          <h2>Así recibiremos tu consulta</h2>
+          <div id="advisorCustomerSummary" class="final-customer-summary"></div>
+          <div id="advisorNeedSummary" class="advisor-need-summary"></div>
+        </div>
+
+        <div class="advisor-final-selection">
+          <span class="eyebrow">PRODUCTOS RELACIONADOS</span>
+          <div id="advisorFinalItems" class="final-order-items"></div>
+          <div id="advisorFinalTotal" class="final-order-totals"></div>
+        </div>
+      </div>
+
+      <div class="advisor-final-actions">
+        <button class="btn secondary" id="backAdvisorData">← Editar datos</button>
+        <button class="btn primary" id="sendConsult">Solicitar contacto de un asesor</button>
+      </div>
+      <p class="checkout-note">Esta versión simula el envío. Luego podremos conectarla al canal comercial o al sistema de gestión.</p>
+    </section>
+  </div>
+</main>
+<aside class="cart-drawer">
+  <div class="drawer-head">
+    <div><span class="eyebrow">TU SELECCIÓN</span><h3>Tu carrito</h3></div>
+    <button type="button" class="drawer-close" aria-label="Cerrar carrito">×</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="drawer-empty" id="drawerEmpty">Todavía no agregaste productos.</div>
+  <div class="cart-summary" id="cartSummary"></div>
+</aside>
+<div class="drawer-backdrop"></div>
+<script src="app.js"></script>
+<div class="flow-modal" id="advisorSuccess" aria-hidden="true">
+      <div class="flow-modal-card">
+        <span class="flow-icon">✓</span>
+        <span class="eyebrow">ASESORAMIENTO SOLICITADO</span>
+        <h2>Tu consulta quedó preparada</h2>
+        <p>En la versión final, estos datos se enviarán al canal comercial definido para que un asesor continúe la atención.</p>
+        <div class="status-preview"><span>Estado</span><b>Asesoramiento solicitado</b></div>
+        <div class="success-actions">
+          <a class="btn secondary full" href="catalogo.html">Seguir comprando</a>
+          <a class="btn primary full" href="index.html">Volver al inicio</a>
+        </div>
+      </div>
+    </div><button class="back-to-top" aria-label="Volver arriba" title="Volver arriba">↑</button>
+</body></html>

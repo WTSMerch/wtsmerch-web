@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Producto | WTS Merch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;1,500;1,600;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="site-header compact"><a class="brand-logo" href="index.html" aria-label="WTS Merch inicio"><img src="assets/logo-wts-principal.png" alt="WTS Merch"></a><nav class="desktop-nav"><a href="catalogo.html">Productos</a><a href="index.html#categorias">Categorías</a><a href="index.html#empresa">Nosotros</a></nav><div class="header-actions"><div class="search-wrap">
+      <input class="search-inline" type="search" placeholder="Buscar productos..." aria-label="Buscar productos">
+      <button class="icon-btn search-open" type="button" aria-label="Buscar">⌕</button>
+    </div><button class="cart-btn cart-open">Carrito <span class="cart-count">0</span></button></div></header>
+<main class="product-page" id="productPage"></main>
+<footer class="mini-footer"><div class="brand-logo footer-logo"><img src="assets/logo-wts-white.png" alt="WTS Merch"></div><span>Merchandising corporativo</span><a href="catalogo.html">Volver al catálogo</a></footer>
+<aside class="cart-drawer">
+  <div class="drawer-head">
+    <div><span class="eyebrow">TU SELECCIÓN</span><h3>Tu carrito</h3></div>
+    <button type="button" class="drawer-close">×</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="drawer-empty" id="drawerEmpty">Todavía no agregaste productos.</div>
+  <div class="cart-summary" id="cartSummary"></div>
+
+  
+</aside>
+<div class="drawer-backdrop"></div>
+<script src="app.js"></script>
+<button class="back-to-top" aria-label="Volver arriba" title="Volver arriba">↑</button>
+</body></html>

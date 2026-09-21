@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finalizar compra | WTS Merch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;1,500;1,600;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header compact">
+  <a class="brand-logo" href="index.html" aria-label="WTS Merch inicio"><img src="assets/logo-wts-principal.png" alt="WTS Merch"></a>
+  <nav class="desktop-nav"><a href="catalogo.html">Productos</a><a href="index.html#categorias">Categorías</a><a href="index.html#empresa">Nosotros</a></nav>
+  <div class="header-actions"><div class="search-wrap">
+      <input class="search-inline" type="search" placeholder="Buscar productos..." aria-label="Buscar productos">
+      <button class="icon-btn search-open" type="button" aria-label="Buscar">⌕</button>
+    </div><button class="cart-btn cart-open">Carrito <span class="cart-count">0</span></button></div>
+</header>
+<main class="checkout-page">
+  <div class="journey-nav"><a href="catalogo.html">← Seguir comprando</a><a href="index.html">Ir al inicio</a></div>
+  <div class="flow-steps checkout-progress">
+    <span id="stepMark1" class="active">1 · Revisar pedido</span>
+    <span id="stepMark2">2 · Datos y entrega</span>
+    <span id="stepMark3">3 · Confirmar</span>
+  </div>
+
+  <div class="checkout-head">
+    <span class="eyebrow">COMPRA AUTOGESTIONADA</span>
+    <h1 id="checkoutTitle">Revisá tu pedido</h1>
+    <p id="checkoutIntro">Confirmá productos, colores y cantidades antes de ingresar tus datos.</p>
+  </div>
+
+  <section id="checkoutStep1" class="checkout-stage">
+    <div class="checkout-review-card">
+      <div class="stage-heading"><div><span class="stage-number">01</span><h2>Tu selección</h2></div><a href="catalogo.html">Agregar otro producto</a></div>
+      <div id="checkoutItems" class="checkout-review-items"></div>
+      <div id="checkoutTotals" class="checkout-review-totals"></div>
+      <div class="checkout-stage-actions"><button id="toCheckoutData" class="btn primary checkout-main-action">Continuar con mis datos</button></div>
+    </div>
+  </section>
+
+  <section id="checkoutStep2" class="checkout-stage" hidden>
+    <div class="checkout-form-card checkout-form-wide"><div id="checkoutError" class="form-error" hidden></div>
+      <div class="stage-heading"><div><span class="stage-number">02</span><h2>Datos de contacto</h2></div><button type="button" class="text-action" id="backToReview">← Volver al pedido</button></div>
+      <div class="form-grid">
+        <label>Nombre y apellido *<input id="checkoutName" required placeholder="Tu nombre" autocomplete="name"></label>
+        <label>Empresa *<input id="checkoutCompany" placeholder="Empresa / organización" required autocomplete="organization"></label>
+        <label>CUIT *<input id="checkoutCuit" required inputmode="numeric" autocomplete="off" maxlength="13" placeholder="XX-XXXXXXXX-X"></label>
+        <label>Email *<input id="checkoutEmail" type="email" required placeholder="nombre@empresa.com" autocomplete="email"></label>
+        <label>Teléfono *<input id="checkoutPhone" required placeholder="+54 ..." type="tel" autocomplete="tel"></label>
+      </div>
+      <h2>Entrega</h2>
+      <div class="choice-row">
+        <label class="choice">
+          <input type="radio" name="delivery" checked value="envio">
+          <span><b>Envío</b><small>Coordinamos la entrega</small></span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="delivery" value="retiro">
+          <span><b>Retiro</b><small>A coordinar</small></span>
+        </label>
+      </div>
+      <div class="form-grid delivery-fields">
+        <label class="wide">Dirección *<input id="checkoutAddress" placeholder="Calle, número, piso / oficina" required autocomplete="street-address"></label>
+        <label>Localidad *<input id="checkoutCity" placeholder="Localidad" required autocomplete="address-level2"></label>
+        <label>Código postal *<input id="checkoutPostal" placeholder="CP" required autocomplete="postal-code"></label>
+      </div>
+      <div class="form-grid order-extra-fields">
+        <label>Fecha en que lo necesitás *<input id="checkoutDate" type="date" required></label>
+        <label class="file-field">Adjuntar archivos <span class="optional">(opcional)</span>
+          <input id="checkoutFiles" type="file" multiple accept=".pdf,.ai,.eps,.svg,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.zip">
+          <small class="file-help">Podés adjuntar logo, diseño, referencias o documentación.</small>
+          <span class="file-list" id="checkoutFileList"></span>
+        </label>
+      </div>
+      <label class="full-label">Comentarios <span class="optional">(opcional)</span><textarea id="checkoutComments" rows="3" placeholder="Indicaciones de entrega u otra observación..."></textarea></label>
+      <div class="checkout-stage-actions"><button id="toCheckoutConfirm" class="btn primary checkout-main-action">Revisar y confirmar</button></div>
+    </div>
+  </section>
+
+  <section id="checkoutStep3" class="checkout-stage" hidden>
+    <div class="checkout-confirm-grid">
+      <div class="checkout-review-card">
+        <div class="stage-heading"><div><span class="stage-number">03</span><h2>Confirmá tu pedido</h2></div><button type="button" class="text-action" id="backToData">Editar datos</button></div>
+        <div id="finalCustomerSummary" class="final-summary"></div>
+<h3>Forma de pago</h3>
+        <div class="choice-row">
+          <label class="choice"><input type="radio" name="payment" checked value="transferencia"><span><b>Transferencia</b><small>Datos al confirmar el pedido</small></span></label>
+          <label class="choice"><input type="radio" name="payment" value="online"><span><b>Pago online</b><small>Disponible al conectar la pasarela</small></span></label>
+        </div>
+        <button id="placeOrder" class="btn primary full checkout-submit">Confirmar pedido</button>
+        <p class="checkout-note">Esta versión es una simulación: todavía no procesa pagos ni genera órdenes reales.</p>
+      </div>
+      <aside class="final-order-card"><h3>Resumen final</h3><div id="finalOrderItems"></div><div id="finalOrderTotals"></div></aside>
+    </div>
+  </section>
+</main>
+
+<aside class="cart-drawer">
+  <div class="drawer-head">
+    <div><span class="eyebrow">TU SELECCIÓN</span><h3>Tu carrito</h3></div>
+    <button type="button" class="drawer-close">×</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="drawer-empty" id="drawerEmpty">Todavía no agregaste productos.</div>
+  <div class="cart-summary" id="cartSummary"></div>
+
+  
+</aside>
+<div class="drawer-backdrop"></div>
+<script src="app.js"></script>
+<div class="flow-modal" id="checkoutSuccess" aria-hidden="true">
+      <div class="flow-modal-card">
+        <span class="flow-icon">✓</span>
+        <span class="eyebrow">PEDIDO INICIADO</span>
+        <h2>Recibimos los datos de tu pedido</h2>
+        <p>En la versión final, desde acá se validará disponibilidad y se continuará con pago, entrega y producción.</p>
+        <div class="status-preview"><span>Estado</span><b>Pedido iniciado</b></div>
+        <div class="success-actions">
+          <a class="btn secondary full" href="catalogo.html">Seguir comprando</a>
+          <a class="btn primary full" href="index.html">Volver al inicio</a>
+        </div>
+      </div>
+    </div><button class="back-to-top" aria-label="Volver arriba" title="Volver arriba">↑</button>
+</body></html>
