@@ -10,23 +10,56 @@ export default {
         const googleUrl =
           APPS_SCRIPT_URL + "?api=catalogoPublico";
 
-        const response = await fetch(googleUrl, {
+        // 1. Pedimos el endpoint sin seguir automáticamente
+        // la redirección de Apps Script.
+        const firstResponse = await fetch(googleUrl, {
           method: "GET",
-          redirect: "follow",
+          redirect: "manual",
           headers: {
             "Accept": "application/json,text/plain,*/*"
           }
         });
 
+        let response = firstResponse;
+
+        // 2. Apps Script normalmente responde 302 hacia
+        // script.googleusercontent.com.
+        if (
+          firstResponse.status >= 300 &&
+          firstResponse.status < 400
+        ) {
+          const location =
+            firstResponse.headers.get("location");
+
+          if (!location) {
+            return Response.json(
+              {
+                ok: false,
+                error: "GOOGLE_REDIRECT_WITHOUT_LOCATION",
+                status: firstResponse.status
+              },
+              { status: 502 }
+            );
+          }
+
+          // 3. Seguimos nosotros mismos la URL exacta
+          // proporcionada por Google.
+          response = await fetch(location, {
+            method: "GET",
+            redirect: "manual",
+            headers: {
+              "Accept": "application/json,text/plain,*/*"
+            }
+          });
+        }
+
         const text = await response.text();
 
-        // Si Google devuelve algo que no sea JSON,
-        // mostramos información útil para diagnosticarlo.
         let data;
 
         try {
           data = JSON.parse(text);
-        } catch (parseError) {
+        } catch (error) {
           return Response.json(
             {
               ok: false,
@@ -35,6 +68,8 @@ export default {
               googleContentType:
                 response.headers.get("content-type") || "",
               finalUrl: response.url,
+              location:
+                response.headers.get("location") || "",
               preview: text.substring(0, 500)
             },
             { status: 502 }
