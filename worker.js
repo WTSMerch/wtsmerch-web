@@ -7,91 +7,62 @@ export default {
 
     if (url.pathname === "/api/catalogo") {
       try {
-        const googleUrl =
-          APPS_SCRIPT_URL + "?api=catalogoPublico";
+        // Evitamos reutilizar/cachar la URL temporal de Google.
+        const sourceUrl =
+          APPS_SCRIPT_URL +
+          "?api=catalogoPublico&_=" +
+          Date.now();
 
-        // 1. Pedimos el endpoint sin seguir automáticamente
-        // la redirección de Apps Script.
-        const firstResponse = await fetch(googleUrl, {
+        const response = await fetch(sourceUrl, {
           method: "GET",
-          redirect: "manual",
+          redirect: "follow",
+          cf: {
+            cacheTtl: 0,
+            cacheEverything: false
+          },
           headers: {
-            "Accept": "application/json,text/plain,*/*"
+            "Accept": "application/json"
           }
         });
-
-        let response = firstResponse;
-
-        // 2. Apps Script normalmente responde 302 hacia
-        // script.googleusercontent.com.
-        if (
-          firstResponse.status >= 300 &&
-          firstResponse.status < 400
-        ) {
-          const location =
-            firstResponse.headers.get("location");
-
-          if (!location) {
-            return Response.json(
-              {
-                ok: false,
-                error: "GOOGLE_REDIRECT_WITHOUT_LOCATION",
-                status: firstResponse.status
-              },
-              { status: 502 }
-            );
-          }
-
-          // 3. Seguimos nosotros mismos la URL exacta
-          // proporcionada por Google.
-          response = await fetch(location, {
-            method: "GET",
-            redirect: "manual",
-            headers: {
-              "Accept": "application/json,text/plain,*/*"
-            }
-          });
-        }
 
         const text = await response.text();
 
-        let data;
-
-        try {
-          data = JSON.parse(text);
-        } catch (error) {
-          return Response.json(
-            {
-              ok: false,
-              error: "APPS_SCRIPT_RETURNED_NON_JSON",
-              googleStatus: response.status,
-              googleContentType:
-                response.headers.get("content-type") || "",
-              finalUrl: response.url,
-              location:
-                response.headers.get("location") || "",
-              preview: text.substring(0, 500)
-            },
-            { status: 502 }
-          );
+        if (!response.ok) {
+          return Response.json({
+            ok: false,
+            error: "GOOGLE_HTTP_ERROR",
+            status: response.status,
+            finalUrl: response.url,
+            preview: text.substring(0, 300)
+          }, { status: 502 });
         }
 
-        return Response.json(data, {
-          status: 200,
-          headers: {
-            "Cache-Control": "public, max-age=60"
-          }
-        });
+        try {
+          const data = JSON.parse(text);
 
-      } catch (error) {
-        return Response.json(
-          {
+          return Response.json(data, {
+            headers: {
+              "Cache-Control": "no-store"
+            }
+          });
+
+        } catch (e) {
+          return Response.json({
             ok: false,
-            error: "CATALOG_PROXY_ERROR",
-            message: String(error)
-          },
-          { status: 502 }
-        );
+            error: "GOOGLE_NON_JSON",
+            status: response.status,
+            finalUrl: response.url,
+            contentType: response.headers.get("content-type"),
+            preview: text.substring(0, 300)
+          }, { status: 502 });
+        }
+
+      } catch (e) {
+        return Response.json({
+          ok: false,
+          error: "PROXY_FETCH_FAILED",
+          message: String(e)
+        }, { status: 502 });
       }
     }
 
