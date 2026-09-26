@@ -65,7 +65,7 @@ async function loadPublicCatalog(){
  if(apiUrl){
    try{
      const sep=apiUrl.includes("?")?"&":"?";
-     const res=await fetch(apiUrl+sep+"api=catalogoPublico",{cache:"no-store"});
+     const res=await fetch("/api/catalogo",{cache:"no-store"});
      if(res.ok){
        const data=await res.json();
        const list=Array.isArray(data?.products)?data.products:[];
