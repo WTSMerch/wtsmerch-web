@@ -5,31 +5,44 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // API pública del catálogo
     if (url.pathname === "/api/catalogo") {
       try {
-        const apiUrl =
+        const googleUrl =
           APPS_SCRIPT_URL + "?api=catalogoPublico";
 
-        const response = await fetch(apiUrl, {
+        const response = await fetch(googleUrl, {
           method: "GET",
-          redirect: "follow"
+          redirect: "follow",
+          headers: {
+            "Accept": "application/json,text/plain,*/*"
+          }
         });
 
-        if (!response.ok) {
+        const text = await response.text();
+
+        // Si Google devuelve algo que no sea JSON,
+        // mostramos información útil para diagnosticarlo.
+        let data;
+
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
           return Response.json(
             {
               ok: false,
-              error: "CATALOG_API_ERROR",
-              status: response.status
+              error: "APPS_SCRIPT_RETURNED_NON_JSON",
+              googleStatus: response.status,
+              googleContentType:
+                response.headers.get("content-type") || "",
+              finalUrl: response.url,
+              preview: text.substring(0, 500)
             },
             { status: 502 }
           );
         }
 
-        const data = await response.json();
-
         return Response.json(data, {
+          status: 200,
           headers: {
             "Cache-Control": "public, max-age=60"
           }
@@ -47,7 +60,6 @@ export default {
       }
     }
 
-    // Todo lo demás continúa siendo la web estática actual.
     return env.ASSETS.fetch(request);
   }
 };
