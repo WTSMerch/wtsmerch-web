@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;1,500;1,600;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=35">
 </head>
 <body class="welcome-locked">
 <header class="site-header">
@@ -94,7 +94,7 @@
       <div class="featured-block" id="productos">
         <div class="featured-title">
           <div><span class="eyebrow">DESTACADOS</span><h3>Una selección para empezar</h3></div>
-          <span class="horizontal-hint">Deslizá para ver más →</span>
+          
         </div>
         <div class="product-grid featured-rail" id="featuredGrid"></div>
       </div>
@@ -214,28 +214,21 @@
     e.preventDefault();
     if (opening) return;
     opening = true;
+    storeReady = true;
+
+    // Liberar la página inmediatamente: el usuario puede hacer scroll desde el clic.
+    document.body.classList.remove('welcome-locked');
+    header.classList.remove('over-welcome','header-previsible');
+    header.classList.add('after-welcome');
     gate.classList.add('welcome-leaving');
+    refreshHeader();
 
-    // Let the header begin appearing before the 2.4 s intro finishes,
-    // so there is no dead pause after pressing the button.
-    window.setTimeout(function(){
-      header.classList.remove('over-welcome');
-      header.classList.add('after-welcome','header-previsible');
-    }, 850);
-
+    // Fade corto, sin bloquear la interacción.
     window.setTimeout(function(){
       gate.hidden = true;
       gate.classList.remove('welcome-leaving');
-
-      document.body.classList.remove('welcome-locked');
-      header.classList.remove('header-previsible');
-      header.classList.add('after-welcome');
-
-      storeReady = true;
       opening = false;
-      window.scrollTo(0,0);
-      refreshHeader();
-    }, 2400);
+    }, 320);
   });
 
   function blockIntroScroll(e){
@@ -256,7 +249,7 @@
 })();
 </script>
 
-<script src="app.js"></script>
+<script src="app.js?v=35"></script>
 <button class="back-to-top" aria-label="Volver arriba" title="Volver arriba">↑</button>
 </body>
 </html>

@@ -1,0 +1,13 @@
+WTS MERCH - PAQUETE LATINCLOUD V20
+
+Destino remoto:
+  /public
+
+Contenido:
+- Web pública V19 conservada.
+- data/config.json apunta a /api/catalogo.php.
+- api/catalogo.php actúa como proxy PHP hacia el catálogo público de Apps Script.
+- index.php redirige la raíz del dominio a /index.html para evitar conflicto con el index.php anterior del hosting.
+
+IMPORTANTE:
+El index.php original del hosting debe conservarse como respaldo antes de reemplazarlo.

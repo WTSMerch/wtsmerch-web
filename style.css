@@ -1787,3 +1787,142 @@ body:has(.cart-drawer.open){
 .wts-public-thumb{width:76px;height:76px;padding:5px;border:1px solid #d9e0e7;border-radius:10px;background:#fff;cursor:pointer}
 .wts-public-thumb.active{outline:2px solid currentColor}
 .wts-public-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+
+
+/* V27 — Destacados: carrusel automático sin barra visible */
+#featuredGrid{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+  scroll-behavior:smooth!important;
+}
+#featuredGrid::-webkit-scrollbar{
+  display:none!important;
+  width:0!important;
+  height:0!important;
+}
+
+
+/* V28 — acceso inmediato a la tienda + destacados sin barra */
+body.welcome-locked{overflow:hidden}
+.welcome-gate{
+  transition:opacity .28s ease,transform .32s ease,filter .28s ease!important;
+}
+.welcome-gate.welcome-leaving{
+  pointer-events:none!important;
+}
+
+.featured-rail,
+#featuredGrid{
+  overflow-x:hidden!important;
+  overflow-y:hidden!important;
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+  scroll-behavior:smooth!important;
+}
+.featured-rail::-webkit-scrollbar,
+#featuredGrid::-webkit-scrollbar{
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  background:transparent!important;
+}
+
+
+/* V29 — carrusel Destacados realmente automático y sin scrollbar */
+html body #featuredGrid.featured-rail{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  overflow-x:hidden!important;
+  overflow-y:hidden!important;
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+  scroll-behavior:smooth!important;
+  padding-bottom:4px!important;
+}
+html body #featuredGrid.featured-rail::-webkit-scrollbar{
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  appearance:none!important;
+}
+html body #featuredGrid.featured-rail::-webkit-scrollbar-track,
+html body #featuredGrid.featured-rail::-webkit-scrollbar-thumb{
+  display:none!important;
+  background:transparent!important;
+}
+
+
+/* V33 — recuperación del layout + movimiento automático seguro */
+@keyframes wtsFeaturedAutoV33{
+  0%, 12%   { transform:translateX(0); }
+  18%, 30%  { transform:translateX(-18%); }
+  36%, 48%  { transform:translateX(-36%); }
+  54%, 66%  { transform:translateX(-54%); }
+  72%, 84%  { transform:translateX(-72%); }
+  90%, 100% { transform:translateX(0); }
+}
+html body #featuredGrid{
+  animation:wtsFeaturedAutoV33 24s ease-in-out infinite!important;
+  will-change:transform;
+}
+html body #featuredGrid:hover{
+  animation-play-state:paused!important;
+}
+@media (prefers-reduced-motion: reduce){
+  html body #featuredGrid{animation:none!important;}
+}
+
+
+/* V34 — carrusel continuo, centrado y contenido dentro de la sección */
+html body #featuredGrid{
+  animation:none!important;
+  transform:none!important;
+  overflow:hidden!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+html body #featuredGrid > .featured-viewport-v34{
+  width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+html body #featuredGrid .featured-track-v34{
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:stretch!important;
+  gap:14px!important;
+  width:max-content!important;
+  will-change:transform!important;
+}
+html body #featuredGrid .featured-track-v34 > .product-card{
+  display:flex!important;
+  flex:0 0 auto!important;
+  /* Conservar el ancho real que ya tenían las tarjetas */
+  margin:0!important;
+}
+
+/* V35: solo contención y pista; no cambia tamaño visual de las cards */
+#featuredGrid{
+  overflow:hidden!important;
+  max-width:100%!important;
+  animation:none!important;
+  transform:none!important;
+}
+#featuredGrid .featured-viewport-v35{
+  overflow:hidden!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+#featuredGrid .featured-track-v35{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:14px!important;
+  width:max-content!important;
+  will-change:transform!important;
+}
+#featuredGrid .featured-track-v35 > .product-card{
+  display:flex!important;
+  flex-shrink:0!important;
+}
