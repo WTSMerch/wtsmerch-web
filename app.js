@@ -91,7 +91,7 @@ async function loadPublicCatalog(){
    }
    // Catálogo: primera página pequeña + metadatos de filtros.
    if($("#catalogGrid")){
-     const data=await fetchCatalogSlice({view:"catalog",limit:48,offset:0});
+     const data=await fetchCatalogSlice({view:"catalog",limit:24,offset:0});
      CATALOG_META=data.meta||{};
      CATALOG_META.total=Number(data.total||0);
      CATALOG_SOURCE_LABEL="catalogo-publico-paginado";
@@ -453,7 +453,7 @@ function setupCatalog(){
  if(urlbrand){const el=$(`.brandFilter[value="${CSS.escape(urlbrand)}"]`);if(el)el.checked=true}
  if(urlcollection){const el=$(`.collectionFilter[value="${CSS.escape(urlcollection)}"]`);if(el)el.checked=true}
 
- let offset=0,limit=48,loading=false,total=Number(CATALOG_META.total||0);
+ let offset=0,limit=24,loading=false,total=Number(CATALOG_META.total||0);
 
  const updateUrl=()=>{
    const u=new URL(location.href);
@@ -508,10 +508,30 @@ function setupCatalog(){
      if(append)grid.insertAdjacentHTML("beforeend",html);
      else grid.innerHTML=html||`<div class="catalog-empty-state"><span class="eyebrow">SIN RESULTADOS</span><h3>No encontramos productos.</h3><p>Probá quitando filtros o realizando otra búsqueda.</p></div>`;
      offset+=rows.length;
+     // V95: primera carga 24; las siguientes cargas son de 12 productos.
+     limit=12;
      let more=$("#catalogLoadMore");
      if(!more){more=document.createElement("div");more.id="catalogLoadMore";more.style.cssText="display:flex;justify-content:center;margin:28px 0 8px";grid.insertAdjacentElement("afterend",more);}
      more.innerHTML=offset<total?`<button type="button" id="catalogMoreBtn" class="quick-add">Mostrar más productos (${total-offset})</button>`:"";
      $("#catalogMoreBtn")?.addEventListener("click",()=>loadPage(true));
+     // V95: carga progresiva automática al acercarse al final del catálogo.
+     if(offset<total){
+       let sentinel=document.getElementById("catalogScrollSentinelV95");
+       if(!sentinel){
+         sentinel=document.createElement("div");
+         sentinel.id="catalogScrollSentinelV95";
+         sentinel.style.cssText="height:1px;width:100%;";
+         more.insertAdjacentElement("afterend",sentinel);
+       }
+       if(!window.__wtsCatalogObserverV95){
+         window.__wtsCatalogObserverV95=new IntersectionObserver(entries=>{
+           if(entries.some(e=>e.isIntersecting)) loadPage(true);
+         },{root:null,rootMargin:"900px 0px",threshold:0});
+       }
+       window.__wtsCatalogObserverV95.observe(sentinel);
+     }else{
+       document.getElementById("catalogScrollSentinelV95")?.remove();
+     }
      $("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
      updateScope();bindAdds();
    }catch(e){
