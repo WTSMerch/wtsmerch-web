@@ -453,7 +453,8 @@ function setupCatalog(){
  if(urlbrand){const el=$(`.brandFilter[value="${CSS.escape(urlbrand)}"]`);if(el)el.checked=true}
  if(urlcollection){const el=$(`.collectionFilter[value="${CSS.escape(urlcollection)}"]`);if(el)el.checked=true}
 
- let offset=0,limit=24,loading=false,total=Number(CATALOG_META.total||0);
+ const INITIAL_LIMIT=24, APPEND_LIMIT=12;
+ let offset=0,loading=false,total=Number(CATALOG_META.total||0),observer=null;
 
  const updateUrl=()=>{
    const u=new URL(location.href);
@@ -490,53 +491,67 @@ function setupCatalog(){
    }
  };
 
+ function removeLegacyMore(){
+   document.getElementById("catalogLoadMore")?.remove();
+   document.getElementById("catalogMoreBtn")?.remove();
+ }
+
+ function armInfiniteScroll(){
+   removeLegacyMore();
+   let sentinel=document.getElementById("catalogScrollSentinelV96");
+   if(offset>=total){
+     if(observer)observer.disconnect();
+     sentinel?.remove();
+     return;
+   }
+   if(!sentinel){
+     sentinel=document.createElement("div");
+     sentinel.id="catalogScrollSentinelV96";
+     sentinel.setAttribute("aria-hidden","true");
+     sentinel.style.cssText="height:2px;width:100%;pointer-events:none";
+     grid.insertAdjacentElement("afterend",sentinel);
+   }
+   if(observer)observer.disconnect();
+   observer=new IntersectionObserver(entries=>{
+     if(entries.some(e=>e.isIntersecting)&&!loading&&offset<total)loadPage(true);
+   },{root:null,rootMargin:"800px 0px",threshold:0});
+   observer.observe(sentinel);
+ }
+
  async function loadPage(append=false){
-   if(loading)return; loading=true;
-   if(!append){offset=0;grid.innerHTML=`<div class="catalog-loading"><p>Cargando productos…</p></div>`;}
+   if(loading)return;
+   loading=true;
+   if(!append){
+     offset=0;
+     if(observer)observer.disconnect();
+     document.getElementById("catalogScrollSentinelV96")?.remove();
+     removeLegacyMore();
+     grid.innerHTML=`<div class="catalog-loading"><p>Cargando productos…</p></div>`;
+   }
    const term=($("#catalogSearch")?.value||"").trim();
    const cat=$(".catFilter:checked")?.value||"";
    const brand=$(".brandFilter:checked")?.value||"";
    const collection=$(".collectionFilter:checked")?.value||"";
    const sort=$("#sortSelect")?.value||"";
+   const requestLimit=append?APPEND_LIMIT:INITIAL_LIMIT;
    try{
-     const data=await fetchCatalogSlice({view:"catalog",limit,offset,q:term,cat,brand,collection,sort});
+     const data=await fetchCatalogSlice({view:"catalog",limit:requestLimit,offset,q:term,cat,brand,collection,sort});
      const rows=validateCatalogProducts((data.products||[]).map(p=>({...p,active:p.active!==false})));
      total=Number(data.total||rows.length);
-     if(append) PRODUCTS=PRODUCTS.concat(rows.filter(p=>!PRODUCTS.some(x=>x.id===p.id)));
+     if(append)PRODUCTS=PRODUCTS.concat(rows.filter(p=>!PRODUCTS.some(x=>x.id===p.id)));
      else PRODUCTS=rows;
      const html=rows.map(card).join("");
      if(append)grid.insertAdjacentHTML("beforeend",html);
      else grid.innerHTML=html||`<div class="catalog-empty-state"><span class="eyebrow">SIN RESULTADOS</span><h3>No encontramos productos.</h3><p>Probá quitando filtros o realizando otra búsqueda.</p></div>`;
      offset+=rows.length;
-     // V95: primera carga 24; las siguientes cargas son de 12 productos.
-     limit=12;
-     let more=$("#catalogLoadMore");
-     if(!more){more=document.createElement("div");more.id="catalogLoadMore";more.style.cssText="display:flex;justify-content:center;margin:28px 0 8px";grid.insertAdjacentElement("afterend",more);}
-     more.innerHTML=offset<total?`<button type="button" id="catalogMoreBtn" class="quick-add">Mostrar más productos (${total-offset})</button>`:"";
-     $("#catalogMoreBtn")?.addEventListener("click",()=>loadPage(true));
-     // V95: carga progresiva automática al acercarse al final del catálogo.
-     if(offset<total){
-       let sentinel=document.getElementById("catalogScrollSentinelV95");
-       if(!sentinel){
-         sentinel=document.createElement("div");
-         sentinel.id="catalogScrollSentinelV95";
-         sentinel.style.cssText="height:1px;width:100%;";
-         more.insertAdjacentElement("afterend",sentinel);
-       }
-       if(!window.__wtsCatalogObserverV95){
-         window.__wtsCatalogObserverV95=new IntersectionObserver(entries=>{
-           if(entries.some(e=>e.isIntersecting)) loadPage(true);
-         },{root:null,rootMargin:"900px 0px",threshold:0});
-       }
-       window.__wtsCatalogObserverV95.observe(sentinel);
-     }else{
-       document.getElementById("catalogScrollSentinelV95")?.remove();
-     }
-     $("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
+     if($("#resultsCount"))$("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
      updateScope();bindAdds();
    }catch(e){
      if(!append)grid.innerHTML=`<div class="catalog-empty-state"><h3>No pudimos cargar el catálogo.</h3><p>Reintentá en unos segundos.</p></div>`;
-   }finally{loading=false}
+   }finally{
+     loading=false;
+     armInfiniteScroll();
+   }
  }
 
  let debounce;
@@ -549,20 +564,14 @@ function setupCatalog(){
    debounce=setTimeout(()=>loadPage(false),e.type==="input"?250:0);
  }));
 
- // Use the first 48 products already obtained during startup.
- // Only query again immediately when the URL already contains a filter/search.
  const hasInitialFilter=!!(urlcat||urlq||urlbrand||urlcollection);
  if(hasInitialFilter){
    loadPage(false);
  }else{
    grid.innerHTML=PRODUCTS.map(card).join("")||`<div class="catalog-empty-state"><h3>No encontramos productos.</h3></div>`;
    offset=PRODUCTS.length;
-   let more=$("#catalogLoadMore");
-   if(!more){more=document.createElement("div");more.id="catalogLoadMore";more.style.cssText="display:flex;justify-content:center;margin:28px 0 8px";grid.insertAdjacentElement("afterend",more);}
-   more.innerHTML=offset<total?`<button type="button" id="catalogMoreBtn" class="quick-add">Mostrar más productos (${total-offset})</button>`:"";
-   $("#catalogMoreBtn")?.addEventListener("click",()=>loadPage(true));
    if($("#resultsCount"))$("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
-   updateScope();bindAdds();
+   updateScope();bindAdds();armInfiniteScroll();
  }
 }
 function setupSearch(){
