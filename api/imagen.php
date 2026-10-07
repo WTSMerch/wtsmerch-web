@@ -80,7 +80,7 @@ if ($origin === '') {
     }
 
     @file_put_contents($cacheFile, $origin, LOCK_EX);
-}
+} 
 
 header('Cache-Control: public, max-age=21600, stale-while-revalidate=86400');
 header('Location: ' . $origin, true, 302);
