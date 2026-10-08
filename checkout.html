@@ -83,13 +83,10 @@
       <div class="checkout-review-card">
         <div class="stage-heading"><div><span class="stage-number">03</span><h2>Confirmá tu pedido</h2></div><button type="button" class="text-action" id="backToData">Editar datos</button></div>
         <div id="finalCustomerSummary" class="final-summary"></div>
-<h3>Forma de pago</h3>
-        <div class="choice-row">
-          <label class="choice"><input type="radio" name="payment" checked value="transferencia"><span><b>Transferencia</b><small>Datos al confirmar el pedido</small></span></label>
-          <label class="choice"><input type="radio" name="payment" value="online"><span><b>Pago online</b><small>Disponible al conectar la pasarela</small></span></label>
-        </div>
-        <button id="placeOrder" class="btn primary full checkout-submit">Confirmar pedido</button>
-        <p class="checkout-note">Esta versión es una simulación: todavía no procesa pagos ni genera órdenes reales.</p>
+<h3>Confirmación comercial</h3>
+        <p>Revisaremos disponibilidad, cantidades, personalización, fecha de entrega y precio final. Te contactaremos para confirmar el pedido y coordinar el pago. <strong>No se realiza ningún cobro en esta instancia.</strong></p>
+        <button id="placeOrder" class="btn primary full checkout-submit">Enviar solicitud de compra</button>
+        <p class="checkout-note">El envío de la solicitud no implica aceptación del pedido ni reserva de stock. Sujeto a confirmación de WTS Merch.</p>
       </div>
       <aside class="final-order-card"><h3>Resumen final</h3><div id="finalOrderItems"></div><div id="finalOrderTotals"></div></aside>
     </div>
@@ -113,9 +110,9 @@
       <div class="flow-modal-card">
         <span class="flow-icon">✓</span>
         <span class="eyebrow">PEDIDO INICIADO</span>
-        <h2>Recibimos los datos de tu pedido</h2>
-        <p>En la versión final, desde acá se validará disponibilidad y se continuará con pago, entrega y producción.</p>
-        <div class="status-preview"><span>Estado</span><b>Pedido iniciado</b></div>
+        <h2>Recibimos tu solicitud de compra</h2>
+        <p>Revisaremos la solicitud y te contactaremos para confirmar disponibilidad, precio final, entrega y forma de pago. No se realizó ningún cobro.</p>
+        <div class="status-preview"><span>Estado</span><b>Pendiente de confirmación</b></div>
         <div class="success-actions">
           <a class="btn secondary full" href="catalogo.html">Seguir comprando</a>
           <a class="btn primary full" href="index.html">Volver al inicio</a>
