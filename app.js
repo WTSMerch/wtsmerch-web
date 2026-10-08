@@ -455,6 +455,14 @@ function setupCatalog(){
 
  const INITIAL_LIMIT=24, APPEND_LIMIT=12;
  let offset=0,loading=false,total=Number(CATALOG_META.total||0),observer=null;
+ let prefetched=null;
+ const pageParams=(nextOffset,nextLimit)=>({view:"catalog",limit:nextLimit,offset:nextOffset,q:($("#catalogSearch")?.value||"").trim(),cat:$(".catFilter:checked")?.value||"",brand:$(".brandFilter:checked")?.value||"",collection:$(".collectionFilter:checked")?.value||"",sort:$("#sortSelect")?.value||""});
+ const prefetchNext=()=>{
+   if(offset>=total)return;
+   const params=pageParams(offset,APPEND_LIMIT),key=JSON.stringify(params);
+   if(prefetched?.key===key)return;
+   prefetched={key,promise:fetchCatalogSlice(params).catch(()=>null)};
+ };
 
  const updateUrl=()=>{
    const u=new URL(location.href);
@@ -535,7 +543,11 @@ function setupCatalog(){
    const sort=$("#sortSelect")?.value||"";
    const requestLimit=append?APPEND_LIMIT:INITIAL_LIMIT;
    try{
-     const data=await fetchCatalogSlice({view:"catalog",limit:requestLimit,offset,q:term,cat,brand,collection,sort});
+     const params={view:"catalog",limit:requestLimit,offset,q:term,cat,brand,collection,sort};
+     const key=JSON.stringify(params);
+     const queued=append&&prefetched?.key===key?prefetched.promise:null;
+     prefetched=null;
+     const data=(queued?await queued:null)||await fetchCatalogSlice(params);
      const rows=validateCatalogProducts((data.products||[]).map(p=>({...p,active:p.active!==false})));
      total=Number(data.total||rows.length);
      if(append)PRODUCTS=PRODUCTS.concat(rows.filter(p=>!PRODUCTS.some(x=>x.id===p.id)));
@@ -551,6 +563,7 @@ function setupCatalog(){
    }finally{
      loading=false;
      armInfiniteScroll();
+     prefetchNext();
    }
  }
 
@@ -571,7 +584,7 @@ function setupCatalog(){
    grid.innerHTML=PRODUCTS.map(card).join("")||`<div class="catalog-empty-state"><h3>No encontramos productos.</h3></div>`;
    offset=PRODUCTS.length;
    if($("#resultsCount"))$("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
-   updateScope();bindAdds();armInfiniteScroll();
+   updateScope();bindAdds();armInfiniteScroll();prefetchNext();
  }
 }
 function setupSearch(){
