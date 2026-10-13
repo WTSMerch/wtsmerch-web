@@ -641,14 +641,20 @@ async function verifyCartAgainstLiveCatalogV94(){
  if(!cart.length)throw new Error("Carrito vacío");
  const response=await fetchCatalogSlice({});
  const live=new Map((response.products||[]).map(p=>[String(p.id),p]));
+ const totals=new Map();
  for(const row of cart){
-   const p=live.get(String(row.id));
+   const id=String(row.id);
+   if(!Number.isSafeInteger(Number(row.qty))||Number(row.qty)<=0)throw new Error("Cantidad inválida.");
+   totals.set(id,(totals.get(id)||0)+Number(row.qty));
+ }
+ for(const [id,qty] of totals){
+   const p=live.get(id);
    if(!p||p.canBuy!==true||!Array.isArray(p.modes)||!p.modes.includes("buy")||
       !Number.isFinite(Number(p.publicPrice))||Number(p.publicPrice)<=0){
      throw new Error("Hay productos que requieren presupuesto o confirmación de precio.");
    }
-   if(Number(row.qty)<Number(p.min||1))throw new Error("Cantidad inferior al mínimo.");
-   if(p.stockStatus==="known"&&Number(row.qty)>Number(p.stock||0))throw new Error("Stock insuficiente.");
+   if(qty<Number(p.min||1))throw new Error("Cantidad inferior al mínimo.");
+   if(p.stockStatus==="known"&&qty>Number(p.stock||0))throw new Error("Stock insuficiente.");
  }
  return true;
 }
