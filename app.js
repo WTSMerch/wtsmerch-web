@@ -595,8 +595,9 @@ function compactCartChoices(){
   let block=drawer.querySelector(".compact-cart-choices");
   if(!block){
     block=document.createElement("div");block.className="compact-cart-choices";
-    const cartProducts=normalizedCart().map(x=>productById(x.id)).filter(Boolean);
-    const canCheckout=cartProducts.length&&cartProducts.every(p=>p.canBuy!==false&&(!Array.isArray(p.modes)||p.modes.includes("buy")));
+  }
+  {
+    const canCheckout=!cartPurchaseIssues();
     block.innerHTML=`<div class="compact-choice-title">Continuar como:</div><div class="compact-choice-row">${canCheckout?`<a href="checkout.html" class="compact-choice primary"><b>Comprar</b><span>Continuar pedido</span></a>`:`<span class="compact-choice disabled-choice"><b>Compra directa</b><span>Disponibilidad a confirmar</span></span>`}<a href="cotizacion.html" class="compact-choice ${canCheckout?'':'primary'}"><b>Presupuesto</b><span>Sin confirmar compra</span></a><a href="consulta.html" class="compact-choice"><b>Asesor</b><span>Recibir ayuda</span></a></div>`;
     const sum=drawer.querySelector("#cartSummary");if(sum)sum.insertAdjacentElement("afterend",block);
   }
