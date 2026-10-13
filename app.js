@@ -620,6 +620,19 @@ function renderCart(){
  compactCartChoices();
 }
 
+function cartPurchaseIssues(){
+ const rows=normalizedCart();
+ if(!rows.length)return "El carrito está vacío.";
+ const blocked=rows.map(r=>productById(r.id)).filter(p=>!p||p.canBuy!==true||!Array.isArray(p.modes)||!p.modes.includes("buy")||!Number.isFinite(Number(p.publicPrice))||Number(p.publicPrice)<=0);
+ if(blocked.length)return "Hay productos que requieren confirmar precio o disponibilidad. Podés solicitar presupuesto o consultar con un asesor.";
+ return "";
+}
+function checkCartPurchaseAllowed(){
+ const issue=cartPurchaseIssues();
+ if(issue){alert(issue);return false;}
+ return true;
+}
+
 function cartMinimumIssues(){
  const c=normalizedCart(),totals={};
  c.forEach(r=>totals[r.id]=(totals[r.id]||0)+r.qty);
@@ -702,6 +715,7 @@ function setupCheckout(){
  }
  $("#toCheckoutData")?.addEventListener("click",()=>{
    const c=normalizedCart(); if(!c.length)return;
+   if(!checkCartPurchaseAllowed())return;
    const minMsg=cartMinimumMessage(); if(minMsg){alert(minMsg);return}
    goStep(2);
  });
@@ -711,6 +725,7 @@ function setupCheckout(){
  $("#toCheckoutConfirm")?.addEventListener("click",()=>{
    const err=$("#checkoutError");clearFormError(err);
    if(!normalizedCart().length)return showFormError(err,"El carrito está vacío. Agregá al menos un producto antes de continuar.");
+   const purchaseIssue=cartPurchaseIssues();if(purchaseIssue)return showFormError(err,purchaseIssue);
    const minMsg=cartMinimumMessage();if(minMsg)return showFormError(err,minMsg);
    const name=$("#checkoutName")?.value.trim(), email=$("#checkoutEmail")?.value.trim(), phone=$("#checkoutPhone")?.value.trim();
    if(!name)return showFormError(err,"Completá tu nombre y apellido.");
@@ -727,7 +742,7 @@ function setupCheckout(){
    renderFinalCheckout();
    goStep(3);
  });
- $("#placeOrder")?.addEventListener("click",async e=>{try{await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert("No pudimos registrar el pedido. Intentá nuevamente.");}});
+ $("#placeOrder")?.addEventListener("click",async e=>{if(!checkCartPurchaseAllowed())return;try{await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert("No pudimos registrar el pedido. Intentá nuevamente.");}});
 }
 function renderFinalCheckout(){
  const c=normalizedCart(), host=$("#finalOrderItems"), totals=$("#finalOrderTotals"), summary=$("#finalCustomerSummary");
