@@ -634,6 +634,25 @@ function checkCartPurchaseAllowed(){
  return true;
 }
 
+// V94: revalidación en origen inmediatamente antes de enviar una compra.
+// Este control del navegador NO sustituye la validación obligatoria del servidor.
+async function verifyCartAgainstLiveCatalogV94(){
+ const cart=normalizedCart();
+ if(!cart.length)throw new Error("Carrito vacío");
+ const response=await fetchCatalogSlice({});
+ const live=new Map((response.products||[]).map(p=>[String(p.id),p]));
+ for(const row of cart){
+   const p=live.get(String(row.id));
+   if(!p||p.canBuy!==true||!Array.isArray(p.modes)||!p.modes.includes("buy")||
+      !Number.isFinite(Number(p.publicPrice))||Number(p.publicPrice)<=0){
+     throw new Error("Hay productos que requieren presupuesto o confirmación de precio.");
+   }
+   if(Number(row.qty)<Number(p.min||1))throw new Error("Cantidad inferior al mínimo.");
+   if(p.stockStatus==="known"&&Number(row.qty)>Number(p.stock||0))throw new Error("Stock insuficiente.");
+ }
+ return true;
+}
+
 function cartMinimumIssues(){
  const c=normalizedCart(),totals={};
  c.forEach(r=>totals[r.id]=(totals[r.id]||0)+r.qty);
@@ -743,7 +762,7 @@ function setupCheckout(){
    renderFinalCheckout();
    goStep(3);
  });
- $("#placeOrder")?.addEventListener("click",async e=>{if(!checkCartPurchaseAllowed())return;try{await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert("No pudimos registrar el pedido. Intentá nuevamente.");}});
+ $("#placeOrder")?.addEventListener("click",async e=>{if(!checkCartPurchaseAllowed())return;try{await verifyCartAgainstLiveCatalogV94();await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert("No pudimos registrar el pedido. Intentá nuevamente.");}});
 }
 function renderFinalCheckout(){
  const c=normalizedCart(), host=$("#finalOrderItems"), totals=$("#finalOrderTotals"), summary=$("#finalCustomerSummary");
