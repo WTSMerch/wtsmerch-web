@@ -651,7 +651,7 @@ function setupCatalog(){
    if(e.target.matches(".collectionFilter")&&e.target.checked)$$(".brandFilter").forEach(y=>y.checked=false);
    updateUrl();
    clearTimeout(debounce);
-   debounce=setTimeout(()=>loadPage(false),e.type==="input"?250:0);
+   debounce=setTimeout(()=>loadPage(false),e.type==="input"?750:0);
  }));
 
  const hasInitialFilter=!!(urlcat||urlq||urlbrand||urlcollection);
