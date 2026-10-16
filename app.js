@@ -746,6 +746,13 @@ async function verifyCartAgainstLiveCatalogV94(){
    }
    if(qty<Number(p.min||1))throw new Error("Cantidad inferior al mínimo.");
    if(p.stockStatus==="known"&&qty>Number(p.stock||0))throw new Error("Stock insuficiente.");
+   // V107: impedir confirmar un importe distinto del mostrado al cliente.
+   const displayed=productById(id);
+   const displayedPrice=Number(displayed?.publicPrice);
+   const livePrice=Number(p.publicPrice);
+   if(!Number.isFinite(displayedPrice)||Math.abs(displayedPrice-livePrice)>0.005){
+     throw new Error("El precio de uno o más productos cambió. Actualizá la página y revisá los importes antes de confirmar.");
+   }
  }
  return true;
 }
