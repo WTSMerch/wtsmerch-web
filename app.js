@@ -144,7 +144,7 @@ async function loadPublicCatalog(){
  }catch(e){}
  return [];
 }
-function computedNetPrice(product){return Number(product?.publicPrice||0);}
+function computedNetPrice(product){return product?.canBuy===true&&Array.isArray(product?.modes)&&product.modes.includes("buy")?Number(product.publicPrice||0):0;}
 function taxBreakdownHtml(net,subtotalLabel="Subtotal neto"){
  const iva=ivaAmount(net),total=grossAmount(net);
  return `<div class="tax-line"><span>${subtotalLabel}</span><b>${ars(net)}</b></div><div class="tax-line"><span>IVA 21%</span><b>${ars(iva)}</b></div><div class="tax-line tax-total"><span>Total con IVA</span><b>${ars(total)}</b></div>`;
