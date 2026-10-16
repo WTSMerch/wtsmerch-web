@@ -81,15 +81,18 @@ async function fetchCatalogSlice(params={}){
  return data;
 }
 async function loadPublicCatalog(){
- // V97: reutilizar el producto ya visible en el catálogo al abrir su ficha.
- // Si hay carrito previo, conservar carga completa para no perder referencias.
- if(document.getElementById("productPage") && !getCart().length){
+ // V98: ficha instantánea y referencias del carrito sin descargar el catálogo completo.
+ if(document.getElementById("productPage")){
    try{
      const id=new URLSearchParams(location.search).get("id");
      const saved=JSON.parse(sessionStorage.getItem("wts_selected_product_v97")||"null");
-     if(id&&saved?.id===id&&saved?.name&&saved?.category){
-       CATALOG_SOURCE_LABEL="producto-cache-v97";
-       return validateCatalogProducts([saved]);
+     const cached=JSON.parse(sessionStorage.getItem("wts_catalog_products_v98")||"[]");
+     const known=[...(Array.isArray(cached)?cached:[]),...(saved?[saved]:[])];
+     const needed=new Set([id,...getCart().map(x=>typeof x==="string"?x:x.id)]);
+     const matched=validateCatalogProducts(known.filter(p=>needed.has(String(p.id))));
+     if(id&&matched.some(p=>String(p.id)===id)){
+       CATALOG_SOURCE_LABEL="producto-cache-v98";
+       return matched;
      }
    }catch(e){}
  }
@@ -182,6 +185,7 @@ function card(p){
 async function loadProducts(){
  const publicProducts=await loadPublicCatalog();
  PRODUCTS=publicProducts.length?publicProducts:FALLBACK_PRODUCTS;
+ rememberCatalogProductsV98(PRODUCTS);
  initPage();
 }
 
@@ -315,6 +319,17 @@ function setupFeaturedMarqueeV34(){
   }
 }
 
+// V98: almacenar solo los productos vistos, para que carrito y ficha funcionen
+// sin descargar miles de artículos en cada navegación.
+function rememberCatalogProductsV98(list){
+ try{
+  const previous=JSON.parse(sessionStorage.getItem("wts_catalog_products_v98")||"[]");
+  const map=new Map();
+  for(const p of [...(Array.isArray(previous)?previous:[]),...(Array.isArray(list)?list:[])])
+   if(p&&p.id)map.set(String(p.id),p);
+  sessionStorage.setItem("wts_catalog_products_v98",JSON.stringify([...map.values()].slice(-150)));
+ }catch(e){}
+}
 // V97: conservar temporalmente la ficha que el usuario eligió.
 document.addEventListener("click",e=>{
  const link=e.target.closest('a[href*="producto.html?id="]');
@@ -562,6 +577,7 @@ function setupCatalog(){
      total=Number(data.total||rows.length);
      if(append)PRODUCTS=PRODUCTS.concat(rows.filter(p=>!PRODUCTS.some(x=>x.id===p.id)));
      else PRODUCTS=rows;
+     rememberCatalogProductsV98(rows);
      const html=rows.map(card).join("");
      if(append)grid.insertAdjacentHTML("beforeend",html);
      else grid.innerHTML=html||`<div class="catalog-empty-state"><span class="eyebrow">SIN RESULTADOS</span><h3>No encontramos productos.</h3><p>Probá quitando filtros o realizando otra búsqueda.</p></div>`;
