@@ -9,7 +9,7 @@ function setupProduct(){
  const images=[p.image,...(Array.isArray(p.images)?p.images:[])].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);
  const selected=params.get("variant")||variants[0]||"";
  const qty=Math.max(min,Number(params.get("qty"))||min);
- const img=images[0]||"assets/termo-acero.svg";
+ const img=images[0]||"assets/imagen-no-disponible.svg";
  const buy=p.canBuy===true&&Array.isArray(p.modes)&&p.modes.includes("buy")&&Number(p.publicPrice)>0;
  host.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:32px;padding:30px 0">
  <section><img id="pdMainImage" src="${wtsEsc(img)}" alt="${wtsEsc(p.name)}" style="width:100%;max-height:520px;object-fit:contain">
@@ -35,5 +35,5 @@ function setupProduct(){
 }
 document.addEventListener("error",e=>{
  const el=e.target;if(!(el instanceof HTMLImageElement)||el.dataset.wtsFallback)return;
- el.dataset.wtsFallback="1";el.src="assets/termo-acero.svg";
+ el.dataset.wtsFallback="1";el.src="assets/imagen-no-disponible.svg";
 },true);
