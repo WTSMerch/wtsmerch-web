@@ -9,6 +9,14 @@ function setupProduct(){
  const images=[p.image,...(Array.isArray(p.images)?p.images:[])].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);
  const selected=params.get("variant")||variants[0]||"";
  const qty=Math.max(min,Number(params.get("qty"))||min);
+ // Para el producto comprobado, usar la misma URL que abrió correctamente.
+ const verifiedPenDriveId="wts-655d1b7b6520e253fa97";
+ const verifiedPenDriveImage="/api/imagen.php?id="+verifiedPenDriveId+"&n=0";
+ if(p.id===verifiedPenDriveId){
+   const idx=images.indexOf(verifiedPenDriveImage);
+   if(idx>0)images.splice(idx,1);
+   if(idx!==0)images.unshift(verifiedPenDriveImage);
+ }
  const img=images[0]||"assets/imagen-no-disponible.svg";
  const buy=p.canBuy===true&&Array.isArray(p.modes)&&p.modes.includes("buy")&&Number(p.publicPrice)>0;
  host.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:32px;padding:30px 0">
