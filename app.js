@@ -85,21 +85,6 @@ async function fetchCatalogSlice(params={}){
  return data;
 }
 async function loadPublicCatalog(){
- // V98: ficha instantánea y referencias del carrito sin descargar el catálogo completo.
- if(document.getElementById("productPage")){
-   try{
-     const id=new URLSearchParams(location.search).get("id");
-     const saved=JSON.parse(sessionStorage.getItem("wts_selected_product_v97")||"null");
-     const cached=JSON.parse(sessionStorage.getItem("wts_catalog_products_v98")||"[]");
-     const known=[...(Array.isArray(cached)?cached:[]),...(saved?[saved]:[])];
-     const needed=new Set([id,...getCart().map(x=>typeof x==="string"?x:x.id)]);
-     const matched=validateCatalogProducts(known.filter(p=>needed.has(String(p.id))));
-     if(id&&matched.some(p=>String(p.id)===id)){
-       CATALOG_SOURCE_LABEL="producto-cache-v98";
-       return matched;
-     }
-   }catch(e){}
- }
  try{
    // V99: endpoint específico para ficha, con respuesta de un solo producto.
    if(document.getElementById("productPage")){
