@@ -802,6 +802,19 @@ function openFlowModal(id){
 }
 
 
+const wtsPendingSubmissionsV106=new Set();
+async function guardedWebSubmissionV106(kind,button,work){
+ if(wtsPendingSubmissionsV106.has(kind))return;
+ wtsPendingSubmissionsV106.add(kind);
+ const oldText=button?.textContent;
+ if(button){button.disabled=true;button.textContent="Procesando…";}
+ try{return await work();}
+ finally{
+  wtsPendingSubmissionsV106.delete(kind);
+  if(button){button.disabled=false;button.textContent=oldText||button.textContent;}
+ }
+}
+
 async function sendWebRequestV88(payload,button){
  if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent="Enviando…"}
  try{
@@ -859,7 +872,7 @@ function setupCheckout(){
    renderFinalCheckout();
    goStep(3);
  });
- $("#placeOrder")?.addEventListener("click",async e=>{if(!checkCartPurchaseAllowed())return;try{await verifyCartAgainstLiveCatalogV94();await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#checkoutSuccess");localStorage.removeItem(cartKey);}catch(err){alert(err?.message||"No pudimos registrar el pedido. Intentá nuevamente.");}});
+ $("#placeOrder")?.addEventListener("click",e=>guardedWebSubmissionV106("COMPRA",e.currentTarget,async()=>{if(!checkCartPurchaseAllowed())return;try{await verifyCartAgainstLiveCatalogV94();await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#checkoutSuccess");localStorage.removeItem(cartKey);}catch(err){alert(err?.message||"No pudimos registrar el pedido. Intentá nuevamente.");}}));
 }
 function renderFinalCheckout(){
  const c=normalizedCart(), host=$("#finalOrderItems"), totals=$("#finalOrderTotals"), summary=$("#finalCustomerSummary");
@@ -1006,7 +1019,7 @@ function setupConsult(){
    goAdvisorStep(3);
  });
 
- $("#sendConsult")?.addEventListener("click",async e=>{try{await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#advisorSuccess");}catch(err){alert("No pudimos registrar la consulta. Intentá nuevamente.");}});
+ $("#sendConsult")?.addEventListener("click",e=>guardedWebSubmissionV106("ASESOR",e.currentTarget,async()=>{try{await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#advisorSuccess");}catch(err){alert("No pudimos registrar la consulta. Intentá nuevamente.");}}));
 }
 function setupQuoteOnly(){
  setupCuitInput("#quoteCuit");
@@ -1075,7 +1088,7 @@ function setupQuoteOnly(){
    if(totals)totals.innerHTML=`${taxBreakdownHtml(total,"Subtotal neto de referencia")}<small>Presupuesto sin compromiso</small>`;
    goQuoteStep(3);
  });
- $("#generateQuote")?.addEventListener("click",async e=>{try{await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#quoteSuccess");}catch(err){alert("No pudimos registrar la solicitud. Intentá nuevamente.");}});
+ $("#generateQuote")?.addEventListener("click",e=>guardedWebSubmissionV106("PRESUPUESTO",e.currentTarget,async()=>{try{await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#quoteSuccess");}catch(err){alert("No pudimos registrar la solicitud. Intentá nuevamente.");}}));
 }
 
 document.addEventListener("click",e=>{
