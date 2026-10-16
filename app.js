@@ -58,31 +58,67 @@ function validateCatalogProducts(list){
 
 let CATALOG_META={categories:[],brands:[],collections:[],total:0};
 let CATALOG_API_URL="";
+let catalogConfigPromise=null;
+const catalogRequestsInFlight=new Map();
+const CATALOG_BROWSE_CACHE_TTL=90000; // Solo navegación, nunca confirmación de pedidos.
+const CATALOG_BROWSE_CACHE_PREFIX="wts_staging_browse_v104:";
 
 async function getCatalogApiUrl(){
  if(CATALOG_API_URL)return CATALOG_API_URL;
- try{
-   const cfg=await fetch("data/config.json",{cache:"no-store"});
-   if(cfg.ok){const j=await cfg.json();CATALOG_API_URL=String(j.catalogApiUrl||"").trim();}
- }catch(e){}
- return CATALOG_API_URL;
+ if(!catalogConfigPromise){
+   catalogConfigPromise=(async()=>{
+     try{
+       const cfg=await fetch("data/config.json",{cache:"no-store"});
+       if(cfg.ok){
+         const j=await cfg.json();
+         CATALOG_API_URL=String(j.catalogApiUrl||"").trim();
+       }
+     }catch(e){}
+     return CATALOG_API_URL;
+   })().finally(()=>{catalogConfigPromise=null;});
+ }
+ return catalogConfigPromise;
 }
 async function fetchCatalogSlice(params={}){
  const apiUrl=await getCatalogApiUrl();
- if(!apiUrl)return {products:[],total:0,meta:{}};
+ if(!apiUrl)throw new Error("URL del catálogo no configurada");
  const u=new URL(apiUrl,location.href);
  Object.entries(params).forEach(([k,v])=>{
    if(v!==undefined&&v!==null&&String(v)!=="")u.searchParams.set(k,String(v));
  });
- const controller=new AbortController();
- const timer=setTimeout(()=>controller.abort(),45000);
- let res;
- try{res=await fetch(u.toString(),{cache:"no-store",signal:controller.signal});}
- finally{clearTimeout(timer);}
- if(!res.ok)throw new Error(`catalogo ${res.status}`);
- const data=await res.json();
- if(!data?.ok)throw new Error("catalogo inválido");
- return data;
+ const view=String(params.view||"");
+ const browseOnly=view==="catalog"||view==="home";
+ const key=browseOnly?CATALOG_BROWSE_CACHE_PREFIX+u.toString():"";
+ if(browseOnly){
+   try{
+     const cached=JSON.parse(sessionStorage.getItem(key)||"null");
+     if(cached&&cached.expires>Date.now()&&cached.data?.ok&&Array.isArray(cached.data.products)){
+       return cached.data;
+     }
+   }catch(e){}
+ }
+ if(catalogRequestsInFlight.has(u.toString()))return catalogRequestsInFlight.get(u.toString());
+ const pending=(async()=>{
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),45000);
+   try{
+     const res=await fetch(u.toString(),{cache:"no-store",signal:controller.signal});
+     if(!res.ok)throw new Error(`catalogo ${res.status}`);
+     const data=await res.json();
+     if(!data?.ok)throw new Error("catalogo inválido");
+     if(browseOnly){
+       try{
+         sessionStorage.setItem(key,JSON.stringify({expires:Date.now()+CATALOG_BROWSE_CACHE_TTL,data}));
+       }catch(e){} // Si la cuota está llena, la tienda continúa sin caché.
+     }
+     return data;
+   }finally{
+     clearTimeout(timer);
+   }
+ })();
+ catalogRequestsInFlight.set(u.toString(),pending);
+ try{return await pending;}
+ finally{catalogRequestsInFlight.delete(u.toString());}
 }
 async function loadPublicCatalog(){
  try{
