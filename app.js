@@ -1088,3 +1088,11 @@ window.selectPublicImage=function(btn){
     bootFeaturedV35();
   }
 })();
+
+// V97: evita imágenes rotas en catálogo, carrito y checkout.
+document.addEventListener("error",event=>{
+ const img=event.target;
+ if(!(img instanceof HTMLImageElement)||img.dataset.wtsFallback)return;
+ img.dataset.wtsFallback="1";
+ img.src="assets/termo-acero.svg";
+},true);
