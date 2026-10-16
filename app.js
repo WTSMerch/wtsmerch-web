@@ -772,7 +772,7 @@ async function sendWebRequestV88(payload,button){
   const j=await res.json(); if(!res.ok||!j?.ok)throw new Error(j?.error||"No se pudo registrar la solicitud"); return j;
  }finally{if(button){button.disabled=false;button.textContent=button.dataset.oldText||button.textContent}}
 }
-function requestItemsV88(){return normalizedCart().map(r=>{const p=productById(r.id)||{};return {id:r.id,nombre:p.name||"",variante:r.variant||"",cantidad:Number(r.qty||0),precioNeto:Number(p.publicPrice||0)};});}
+function requestItemsV88(){return normalizedCart().map(r=>{const p=productById(r.id)||{};return {id:r.id,nombre:p.name||"",variante:r.variant||"",cantidad:Number(r.qty||0),precioNeto:computedNetPrice(p)};});}
 function customerV88(prefix){return {nombre:$("#"+prefix+"Name")?.value.trim()||"",empresa:$("#"+prefix+"Company")?.value.trim()||"",cuit:$("#"+prefix+"Cuit")?.value.trim()||"",email:$("#"+prefix+"Email")?.value.trim()||"",telefono:$("#"+prefix+"Phone")?.value.trim()||"",direccion:$("#"+prefix+"Address")?.value.trim()||"",localidad:$("#"+prefix+"City")?.value.trim()||"",codigoPostal:$("#"+prefix+"Postal")?.value.trim()||"",fechaNecesaria:$("#"+prefix+"Date")?.value||""};}
 
 function setupCheckout(){
