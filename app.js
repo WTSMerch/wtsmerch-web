@@ -75,7 +75,7 @@ async function fetchCatalogSlice(params={}){
    if(v!==undefined&&v!==null&&String(v)!=="")u.searchParams.set(k,String(v));
  });
  const controller=new AbortController();
- const timer=setTimeout(()=>controller.abort(),18000);
+ const timer=setTimeout(()=>controller.abort(),45000);
  let res;
  try{res=await fetch(u.toString(),{cache:"no-store",signal:controller.signal});}
  finally{clearTimeout(timer);}
@@ -622,7 +622,8 @@ function setupCatalog(){
  if(hasInitialFilter){
    loadPage(false);
  }else{
-   grid.innerHTML=PRODUCTS.map(card).join("")||`<div class="catalog-empty-state"><h3>No encontramos productos.</h3></div>`;
+   grid.innerHTML=PRODUCTS.map(card).join("")||`<div class="catalog-empty-state"><h3>No pudimos cargar el catálogo.</h3><p>La consulta tardó demasiado o no respondió.</p><button type="button" id="catalogRetryV103">Reintentar carga</button></div>`;
+   $("#catalogRetryV103")?.addEventListener("click",()=>loadPage(false));
    offset=PRODUCTS.length;
    if($("#resultsCount"))$("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
    updateScope();bindAdds();armInfiniteScroll();
