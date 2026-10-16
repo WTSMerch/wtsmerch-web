@@ -116,7 +116,19 @@ async function loadPublicCatalog(){
      CATALOG_SOURCE_LABEL="catalogo-publico-paginado";
      return validateCatalogProducts((data.products||[]).map(p=>({...p,active:p.active!==false})));
    }
-   // Producto / carrito / checkout conservan compatibilidad completa por ahora.
+   // V99: carrito y checkout recuperan sus referencias desde la sesión;
+   // se mantiene la consulta completa solo cuando faltan productos.
+   if(!document.getElementById("productPage")){
+     try{
+       const stored=JSON.parse(sessionStorage.getItem("wts_catalog_products_v98")||"[]");
+       const ids=new Set(getCart().map(x=>String(typeof x==="string"?x:x.id)));
+       const found=validateCatalogProducts((Array.isArray(stored)?stored:[]).filter(p=>ids.has(String(p.id))));
+       if(ids.size>0&&found.length===ids.size){
+         CATALOG_SOURCE_LABEL="carrito-cache-v99";
+         return found;
+       }
+     }catch(e){}
+   }
    const data=await fetchCatalogSlice({});
    const list=Array.isArray(data?.products)?data.products:[];
    const normalized=validateCatalogProducts(list.map(p=>({...p,active:p.active!==false})));
