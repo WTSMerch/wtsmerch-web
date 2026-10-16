@@ -822,11 +822,27 @@ async function guardedWebSubmissionV106(kind,button,work){
  }
 }
 
+// V108: misma clave para reintentos del mismo formulario y contenido.
+function wtsRequestKeyV108(payload){
+ const signature=JSON.stringify(payload);
+ const slot="wts_request_pending_v108:"+String(payload.tipo||"");
+ try{
+  const previous=JSON.parse(sessionStorage.getItem(slot)||"null");
+  if(previous?.signature===signature&&/^[a-zA-Z0-9-]{20,90}$/.test(previous.key))return previous.key;
+ }catch(e){}
+ const key=globalThis.crypto?.randomUUID?.()||Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");
+ try{sessionStorage.setItem(slot,JSON.stringify({signature,key}));}catch(e){}
+ return key;
+}
 async function sendWebRequestV88(payload,button){
+ const slot="wts_request_pending_v108:"+String(payload.tipo||"");
+ const key=wtsRequestKeyV108(payload);
  if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent="Enviando…"}
  try{
-  const res=await fetch("api/solicitud.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  const j=await res.json(); if(!res.ok||!j?.ok)throw new Error(j?.error||"No se pudo registrar la solicitud"); return j;
+  const res=await fetch("api/solicitud.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,idempotencyKey:key})});
+  const j=await res.json(); if(!res.ok||!j?.ok)throw new Error(j?.error||"No se pudo registrar la solicitud");
+  try{sessionStorage.removeItem(slot);}catch(e){}
+  return j;
  }finally{if(button){button.disabled=false;button.textContent=button.dataset.oldText||button.textContent}}
 }
 function requestItemsV88(){return normalizedCart().map(r=>{const p=productById(r.id)||{};return {id:r.id,nombre:p.name||"",variante:r.variant||"",cantidad:Number(r.qty||0),precioNeto:computedNetPrice(p)};});}
