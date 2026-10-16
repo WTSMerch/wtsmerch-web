@@ -567,7 +567,7 @@ function setupCatalog(){
    if(observer)observer.disconnect();
    observer=new IntersectionObserver(entries=>{
      if(entries.some(e=>e.isIntersecting)&&!loading&&offset<total)loadPage(true);
-   },{root:null,rootMargin:"800px 0px",threshold:0});
+   },{root:null,rootMargin:"0px",threshold:0.1});
    observer.observe(sentinel);
  }
 
