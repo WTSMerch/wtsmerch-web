@@ -60,8 +60,8 @@ let CATALOG_META={categories:[],brands:[],collections:[],total:0};
 let CATALOG_API_URL="";
 let catalogConfigPromise=null;
 const catalogRequestsInFlight=new Map();
-const CATALOG_BROWSE_CACHE_TTL=90000; // Solo navegación, nunca confirmación de pedidos.
-const CATALOG_BROWSE_CACHE_PREFIX="wts_staging_browse_v104:";
+const CATALOG_BROWSE_CACHE_TTL=90000; // Lectura de catálogo y ficha; nunca confirmación de pedidos.
+const CATALOG_BROWSE_CACHE_PREFIX="wts_staging_browse_v105:";
 
 async function getCatalogApiUrl(){
  if(CATALOG_API_URL)return CATALOG_API_URL;
@@ -87,7 +87,7 @@ async function fetchCatalogSlice(params={}){
    if(v!==undefined&&v!==null&&String(v)!=="")u.searchParams.set(k,String(v));
  });
  const view=String(params.view||"");
- const browseOnly=view==="catalog"||view==="home";
+ const browseOnly=view==="catalog"||view==="home"||view==="product";
  const key=browseOnly?CATALOG_BROWSE_CACHE_PREFIX+u.toString():"";
  if(browseOnly){
    try{
