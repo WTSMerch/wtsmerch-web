@@ -15,8 +15,8 @@ function setupProduct(){
  <section><img id="pdMainImage" src="${wtsEsc(img)}" alt="${wtsEsc(p.name)}" style="width:100%;max-height:520px;object-fit:contain">
  <div style="display:flex;gap:8px;flex-wrap:wrap">${images.slice(0,8).map((url,i)=>`<button type="button" data-pd-img="${wtsEsc(url)}" aria-label="Imagen ${i+1}"><img src="${wtsEsc(url)}" alt="" style="width:65px;height:65px;object-fit:contain"></button>`).join("")}</div></section>
  <section><a href="catalogo.html">← Volver al catálogo</a><p>${wtsEsc(p.category||"")}${p.brand?" · "+wtsEsc(p.brand):""}</p><h1>${wtsEsc(p.name)}</h1>
- <p>${wtsEsc(p.description||p.descripcion||"Consultá las características y opciones de personalización.")}</p>
- ${p.characteristics||p.caracteristicas?`<h3>Características</h3><p style="white-space:pre-line">${wtsEsc(p.characteristics||p.caracteristicas)}</p>`:""}
+ <p>${wtsEsc(p.description||p.descripcion||p.desc||"Consultá las características y opciones de personalización.")}</p>
+ ${p.characteristics||p.caracteristicas||p.features?`<h3>Características</h3><p style="white-space:pre-line">${wtsEsc(p.characteristics||p.caracteristicas||p.features)}</p>`:""}
  <p><strong>${Number(p.publicPrice)>0?ars(p.publicPrice)+" neto + IVA":"Precio a consultar"}</strong></p>
  <p>Pedido mínimo: ${min} unidades</p>
  ${variants.length?`<label for="pdVariant">Color / variante</label><select id="pdVariant" style="display:block;width:100%;padding:12px;margin:8px 0 18px">${variants.map(v=>`<option value="${wtsEsc(v)}" ${v===selected?"selected":""}>${wtsEsc(v)}</option>`).join("")}</select>`:""}
