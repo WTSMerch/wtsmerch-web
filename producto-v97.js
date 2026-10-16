@@ -17,7 +17,7 @@ function setupProduct(){
  <section><a href="catalogo.html">← Volver al catálogo</a><p>${wtsEsc(p.category||"")}${p.brand?" · "+wtsEsc(p.brand):""}</p><h1>${wtsEsc(p.name)}</h1>
  <p>${wtsEsc(p.description||p.descripcion||p.desc||"Consultá las características y opciones de personalización.")}</p>
  ${p.characteristics||p.caracteristicas||p.features?`<h3>Características</h3><p style="white-space:pre-line">${wtsEsc(p.characteristics||p.caracteristicas||p.features)}</p>`:""}
- <p><strong>${Number(p.publicPrice)>0?ars(p.publicPrice)+" neto + IVA":"Precio a consultar"}</strong></p>
+ <p><strong>${buy&&Number(p.publicPrice)>0?ars(p.publicPrice)+" neto + IVA":"Precio a confirmar por presupuesto"}</strong></p>
  <p>Pedido mínimo: ${min} unidades</p>
  ${variants.length?`<label for="pdVariant">Color / variante</label><select id="pdVariant" style="display:block;width:100%;padding:12px;margin:8px 0 18px">${variants.map(v=>`<option value="${wtsEsc(v)}" ${v===selected?"selected":""}>${wtsEsc(v)}</option>`).join("")}</select>`:""}
  <label for="pdQty">Cantidad</label><input id="pdQty" type="number" min="${min}" step="1" value="${qty}" style="display:block;width:140px;padding:12px;margin:8px 0 18px">
