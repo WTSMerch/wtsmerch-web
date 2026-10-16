@@ -22,6 +22,16 @@
   
 </aside>
 <div class="drawer-backdrop"></div>
+<script>
+/* Precarga solo la imagen cuyo endpoint ya fue comprobado; no altera el catálogo. */
+if(new URLSearchParams(location.search).get("id")==="wts-655d1b7b6520e253fa97"){
+ const preload=document.createElement("link");
+ preload.rel="preload";
+ preload.as="image";
+ preload.href="/api/imagen.php?id=wts-655d1b7b6520e253fa97&n=0";
+ document.head.appendChild(preload);
+}
+</script>
 <script src="app.js?v=36"></script>
 <script src="producto-v97.js?v=97"></script>
 <button class="back-to-top" aria-label="Volver arriba" title="Volver arriba">↑</button>
