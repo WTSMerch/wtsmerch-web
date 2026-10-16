@@ -74,7 +74,11 @@ async function fetchCatalogSlice(params={}){
  Object.entries(params).forEach(([k,v])=>{
    if(v!==undefined&&v!==null&&String(v)!=="")u.searchParams.set(k,String(v));
  });
- const res=await fetch(u.toString(),{cache:"no-store"});
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),18000);
+ let res;
+ try{res=await fetch(u.toString(),{cache:"no-store",signal:controller.signal});}
+ finally{clearTimeout(timer);}
  if(!res.ok)throw new Error(`catalogo ${res.status}`);
  const data=await res.json();
  if(!data?.ok)throw new Error("catalogo inválido");
