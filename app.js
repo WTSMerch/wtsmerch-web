@@ -101,6 +101,21 @@ async function loadPublicCatalog(){
    }catch(e){}
  }
  try{
+   // V99: endpoint específico para ficha, con respuesta de un solo producto.
+   if(document.getElementById("productPage")){
+     const id=new URLSearchParams(location.search).get("id");
+     if(id){
+       const data=await fetchCatalogSlice({view:"product",id,limit:1});
+       const rows=validateCatalogProducts(data.products||[]);
+       if(rows.length){
+         const stored=JSON.parse(sessionStorage.getItem("wts_catalog_products_v98")||"[]");
+         const needed=new Set(getCart().map(x=>String(typeof x==="string"?x:x.id)));
+         const cartRows=(Array.isArray(stored)?stored:[]).filter(p=>needed.has(String(p.id)));
+         CATALOG_SOURCE_LABEL="producto-v99";
+         return validateCatalogProducts([...rows,...cartRows]);
+       }
+     }
+   }
    // Inicio: solo necesita destacados, no los 1493 productos.
    if($("#featuredGrid")&&!$("#catalogGrid")){
      const data=await fetchCatalogSlice({view:"home",limit:6});
