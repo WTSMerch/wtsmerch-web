@@ -81,6 +81,18 @@ async function fetchCatalogSlice(params={}){
  return data;
 }
 async function loadPublicCatalog(){
+ // V97: reutilizar el producto ya visible en el catálogo al abrir su ficha.
+ // Si hay carrito previo, conservar carga completa para no perder referencias.
+ if(document.getElementById("productPage") && !getCart().length){
+   try{
+     const id=new URLSearchParams(location.search).get("id");
+     const saved=JSON.parse(sessionStorage.getItem("wts_selected_product_v97")||"null");
+     if(id&&saved?.id===id&&saved?.name&&saved?.category){
+       CATALOG_SOURCE_LABEL="producto-cache-v97";
+       return validateCatalogProducts([saved]);
+     }
+   }catch(e){}
+ }
  try{
    // Inicio: solo necesita destacados, no los 1493 productos.
    if($("#featuredGrid")&&!$("#catalogGrid")){
@@ -303,6 +315,16 @@ function setupFeaturedMarqueeV34(){
   }
 }
 
+// V97: conservar temporalmente la ficha que el usuario eligió.
+document.addEventListener("click",e=>{
+ const link=e.target.closest('a[href*="producto.html?id="]');
+ if(!link)return;
+ try{
+  const url=new URL(link.href,location.href),id=url.searchParams.get("id");
+  const p=PRODUCTS.find(x=>String(x.id)===id);
+  if(p)sessionStorage.setItem("wts_selected_product_v97",JSON.stringify(p));
+ }catch(err){}
+});
 function initPage(){
  const feat=$("#featuredGrid"); if(feat){const f=PRODUCTS.filter(p=>p.featured);feat.innerHTML=(f.length?f:PRODUCTS).slice(0,6).map(card).join("");}
  setupCatalog(); setupProduct(); setupSearch(); setupCart(); setupCheckout(); setupConsult(); setupQuoteOnly(); setupHeaderScrollSearch(); setupBackToTop(); setupFeaturedMarqueeV34(); bindAdds();
