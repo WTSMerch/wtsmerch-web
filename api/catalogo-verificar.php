@@ -34,6 +34,20 @@ if ($body===false || $status<200 || $status>=300) respond(502,['ok'=>false,'erro
 if (strlen($body)>8000000) respond(502,['ok'=>false,'error'=>'Respuesta del catálogo demasiado grande']);
 $data=json_decode($body,true);
 if (!is_array($data) || ($data['ok']??false)!==true || !isset($data['products']) || !is_array($data['products'])) {
- respond(502,['ok'=>false,'error'=>'Respuesta del catálogo inválida']);
+ // Only structural diagnostics: never expose body, URL, token or private data.
+ $keys=is_array($data)?array_slice(array_keys($data),0,12):[];
+ $keys=array_values(array_filter($keys,static fn($k)=>is_string($k)&&preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,40}$/',$k)));
+ respond(502,[
+  'ok'=>false,
+  'error'=>'Respuesta del catálogo inválida',
+  'diagnostico'=>[
+   'tipo'=>is_array($data)?'json':'no_json',
+   'claves'=>$keys,
+   'ok_remoto'=>is_array($data)?($data['ok']??null):null,
+   'productos_es_lista'=>is_array($data)&&isset($data['products'])&&is_array($data['products']),
+   'html'=>is_string($body)&&preg_match('/^\\s*<(?:!doctype|html)/i',$body)===1,
+   'json_error'=>json_last_error()===JSON_ERROR_NONE?'ninguno':json_last_error_msg()
+  ]
+ ]);
 }
 echo $body;
