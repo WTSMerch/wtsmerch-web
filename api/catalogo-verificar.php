@@ -10,9 +10,13 @@ function respond(int $status, array $data): never {
 }
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') respond(405,['ok'=>false,'error'=>'Método no permitido']);
 if (!function_exists('curl_init')) respond(503,['ok'=>false,'error'=>'cURL no disponible']);
-$url=trim((string)@file_get_contents('/www/wts/wts-private/apps-script-url'));
+// Use the same staging catalog endpoint configured for the public staging website.
+// This is read-only; do not reuse the private order-submission URL.
+$configRaw=@file_get_contents(__DIR__.'/../data/config.json');
+$config=json_decode((string)$configRaw,true);
+$url=is_array($config)?trim((string)($config['catalogApiUrl']??'')):'';
 if ($url==='' || !preg_match('~^https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec$~D',$url)) {
- respond(503,['ok'=>false,'error'=>'URL del catálogo no configurada']);
+ respond(503,['ok'=>false,'error'=>'URL del catálogo de pruebas no configurada']);
 }
 $ch=curl_init($url);
 curl_setopt_array($ch,[
@@ -24,7 +28,7 @@ curl_setopt_array($ch,[
  CURLOPT_SSL_VERIFYPEER=>true,
  CURLOPT_SSL_VERIFYHOST=>2,
  CURLOPT_HTTPHEADER=>['Accept: application/json'],
- CURLOPT_USERAGENT=>'WTSMerch-Staging-Catalog-Verification/110'
+ CURLOPT_USERAGENT=>'WTSMerch-Staging-Catalog-Verification/111'
 ]);
 $body=curl_exec($ch);
 $status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);
