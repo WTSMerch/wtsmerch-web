@@ -730,7 +730,10 @@ function checkCartPurchaseAllowed(){
 async function verifyCartAgainstLiveCatalogV94(){
  const cart=normalizedCart();
  if(!cart.length)throw new Error("Carrito vacío");
- const response=await fetchCatalogSlice({});
+ const verifyResponse=await fetch("api/catalogo-verificar.php",{cache:"no-store"});
+ if(!verifyResponse.ok)throw new Error("No se pudo verificar el catálogo. Intentá más tarde, sin confirmar el pedido.");
+ const response=await verifyResponse.json();
+ if(!response?.ok||!Array.isArray(response.products))throw new Error("El catálogo no devolvió datos válidos para verificar el pedido.");
  const live=new Map((response.products||[]).map(p=>[String(p.id),p]));
  const totals=new Map();
  for(const row of cart){
