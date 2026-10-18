@@ -18,6 +18,9 @@ $url=is_array($config)?trim((string)($config['catalogApiUrl']??'')):'';
 if ($url==='' || !preg_match('~^https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec$~D',$url)) {
  respond(503,['ok'=>false,'error'=>'URL del catálogo de pruebas no configurada']);
 }
+// doGet returns the management HTML without catalog parameters.
+// api=catalogoPublico selects the read-only JSON catalog route.
+$url.='?api=catalogoPublico';
 $ch=curl_init($url);
 curl_setopt_array($ch,[
  CURLOPT_RETURNTRANSFER=>true,
