@@ -33,6 +33,9 @@ curl_setopt_array($ch,[
 $body=curl_exec($ch);
 $status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);
 $error=(int)curl_errno($ch);
+$effectiveUrl=(string)curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
+$contentType=(string)curl_getinfo($ch,CURLINFO_CONTENT_TYPE);
+$redirectCount=(int)curl_getinfo($ch,CURLINFO_REDIRECT_COUNT);
 curl_close($ch);
 if ($body===false || $status<200 || $status>=300) respond(502,['ok'=>false,'error'=>'No se pudo consultar el catálogo','codigo_curl'=>$error]);
 if (strlen($body)>8000000) respond(502,['ok'=>false,'error'=>'Respuesta del catálogo demasiado grande']);
@@ -50,7 +53,13 @@ if (!is_array($data) || ($data['ok']??false)!==true || !isset($data['products'])
    'ok_remoto'=>is_array($data)?($data['ok']??null):null,
    'productos_es_lista'=>is_array($data)&&isset($data['products'])&&is_array($data['products']),
    'html'=>is_string($body)&&preg_match('/^\\s*<(?:!doctype|html)/i',$body)===1,
-   'json_error'=>json_last_error()===JSON_ERROR_NONE?'ninguno':json_last_error_msg()
+   'json_error'=>json_last_error()===JSON_ERROR_NONE?'ninguno':json_last_error_msg(),
+   'http_status'=>$status,
+   'redirects'=>$redirectCount,
+   'destino'=>preg_match('~^https://([^/]+)~i',$effectiveUrl,$m)?strtolower($m[1]):'desconocido',
+   'content_type'=>substr($contentType,0,80),
+   'pagina_google_login'=>stripos((string)$body,'accounts.google.com')!==false,
+   'pagina_google_error'=>stripos((string)$body,'Google Apps Script')!==false || stripos((string)$body,'script.google.com')!==false
   ]
  ]);
 }
