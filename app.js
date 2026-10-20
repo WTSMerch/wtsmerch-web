@@ -152,6 +152,27 @@ async function loadPublicCatalog(){
      CATALOG_SOURCE_LABEL="catalogo-publico-paginado";
      return validateCatalogProducts((data.products||[]).map(p=>({...p,active:p.active!==false})));
    }
+   // V116: checkout loads only its cart products through the same-origin PHP proxy.
+   // Avoid cross-origin full catalog fetch and missing static JSON fallback.
+   if(location.pathname.endsWith("/checkout.html")){
+     const ids=[...new Set(getCart().map(x=>String(typeof x==="string"?x:x.id)))];
+     if(!ids.length)return [];
+     const stored=JSON.parse(sessionStorage.getItem("wts_catalog_products_v98")||"[]");
+     const cached=Array.isArray(stored)?stored.filter(p=>ids.includes(String(p.id))):[];
+     const missing=ids.filter(id=>!cached.some(p=>String(p.id)===id));
+     const fresh=[];
+     for(const id of missing){
+       try{
+         const res=await fetch("api/catalogo-verificar.php?id="+encodeURIComponent(id),{cache:"no-store"});
+         if(!res.ok)continue;
+         const data=await res.json();
+         if(data?.ok&&Array.isArray(data.products)&&data.products.length===1&&String(data.products[0]?.id)===id)
+           fresh.push(data.products[0]);
+       }catch(e){}
+     }
+     CATALOG_SOURCE_LABEL="carrito-productos-v116";
+     return validateCatalogProducts([...cached,...fresh]);
+   }
    // V99: carrito y checkout recuperan sus referencias desde la sesión;
    // se mantiene la consulta completa solo cuando faltan productos.
    if(!document.getElementById("productPage")){
