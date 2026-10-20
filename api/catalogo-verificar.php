@@ -20,7 +20,9 @@ if ($url==='' || !preg_match('~^https://script\\.google\\.com/macros/s/[A-Za-z0-
 }
 // doGet returns the management HTML without catalog parameters.
 // api=catalogoPublico selects the read-only JSON catalog route.
-$url.='?api=catalogoPublico';
+// V114 diagnostic: request a single catalog item to isolate full-catalog timeout.
+// NOT checkout-ready: a one-item response cannot validate an arbitrary cart.
+$url.='?api=catalogoPublico&view=catalog&limit=1&offset=0';
 $ch=curl_init($url);
 curl_setopt_array($ch,[
  CURLOPT_RETURNTRANSFER=>true,
