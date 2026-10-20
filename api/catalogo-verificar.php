@@ -20,9 +20,10 @@ if ($url==='' || !preg_match('~^https://script\\.google\\.com/macros/s/[A-Za-z0-
 }
 // doGet returns the management HTML without catalog parameters.
 // api=catalogoPublico selects the read-only JSON catalog route.
-// V114 diagnostic: request a single catalog item to isolate full-catalog timeout.
-// NOT checkout-ready: a one-item response cannot validate an arbitrary cart.
-$url.='?api=catalogoPublico&view=catalog&limit=1&offset=0';
+// V115: only allow exact public product IDs; never accept an arbitrary upstream URL.
+$id=(string)($_GET['id']??'');
+if (!preg_match('/^wts-[a-f0-9]{20}$/D',$id)) respond(400,['ok'=>false,'error'=>'Identificador de producto inválido']);
+$url.='?view=product&id='.rawurlencode($id).'&limit=1';
 $ch=curl_init($url);
 curl_setopt_array($ch,[
  CURLOPT_RETURNTRANSFER=>true,
@@ -67,5 +68,8 @@ if (!is_array($data) || ($data['ok']??false)!==true || !isset($data['products'])
    'pagina_google_error'=>stripos((string)$body,'Google Apps Script')!==false || stripos((string)$body,'script.google.com')!==false
   ]
  ]);
+}
+if (count($data['products'])!==1 || (string)($data['products'][0]['id']??'')!==$id) {
+ respond(502,['ok'=>false,'error'=>'El catálogo no devolvió el producto solicitado']);
 }
 echo $body;
