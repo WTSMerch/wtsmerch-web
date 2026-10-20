@@ -730,11 +730,6 @@ function checkCartPurchaseAllowed(){
 async function verifyCartAgainstLiveCatalogV94(){
  const cart=normalizedCart();
  if(!cart.length)throw new Error("Carrito vacío");
- const verifyResponse=await fetch("api/catalogo-verificar.php",{cache:"no-store"});
- if(!verifyResponse.ok)throw new Error("No se pudo verificar el catálogo. Intentá más tarde, sin confirmar el pedido.");
- const response=await verifyResponse.json();
- if(!response?.ok||!Array.isArray(response.products))throw new Error("El catálogo no devolvió datos válidos para verificar el pedido.");
- const live=new Map((response.products||[]).map(p=>[String(p.id),p]));
  const totals=new Map();
  for(const row of cart){
    const id=String(row.id);
@@ -742,7 +737,18 @@ async function verifyCartAgainstLiveCatalogV94(){
    totals.set(id,(totals.get(id)||0)+Number(row.qty));
  }
  for(const [id,qty] of totals){
-   const p=live.get(id);
+   // V115: read only the requested product, never trust an unrelated catalog row.
+   const controller=new AbortController();
+   const timeout=setTimeout(()=>controller.abort(),50000);
+   let response;
+   try{
+     const verifyResponse=await fetch("api/catalogo-verificar.php?id="+encodeURIComponent(id),{cache:"no-store",signal:controller.signal});
+     if(!verifyResponse.ok)throw new Error("No se pudo verificar el catálogo. Intentá más tarde, sin confirmar el pedido.");
+     response=await verifyResponse.json();
+   }finally{clearTimeout(timeout);}
+   if(!response?.ok||!Array.isArray(response.products)||response.products.length!==1||
+      String(response.products[0]?.id)!==id)throw new Error("No se pudo verificar el producto solicitado.");
+   const p=response.products[0];
    if(!p||p.canBuy!==true||!Array.isArray(p.modes)||!p.modes.includes("buy")||
       !Number.isFinite(Number(p.publicPrice))||Number(p.publicPrice)<=0){
      throw new Error("Hay productos que requieren presupuesto o confirmación de precio.");
