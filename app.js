@@ -305,7 +305,7 @@ function setupFeaturedMarqueeV34(){
 
 function initPage(){
  const feat=$("#featuredGrid"); if(feat){const f=PRODUCTS.filter(p=>p.featured);feat.innerHTML=(f.length?f:PRODUCTS).slice(0,6).map(card).join("");}
- setupCatalog(); setupProduct(); setupSearch(); setupCart(); setupCheckout(); setupConsult(); setupQuoteOnly(); setupHeaderScrollSearch(); setupBackToTop(); setupFeaturedMarqueeV34(); bindAdds();
+ setupCatalog(); if(typeof setupProduct==="function")setupProduct(); setupSearch(); setupCart(); setupCheckout(); setupConsult(); setupQuoteOnly(); setupHeaderScrollSearch(); setupBackToTop(); setupFeaturedMarqueeV34(); bindAdds();
 }
 // Habilitar la consulta sin esperar a la API remota del catálogo.
 function bootEmptyAdvisor(){
