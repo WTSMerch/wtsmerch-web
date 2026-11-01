@@ -307,6 +307,16 @@ function initPage(){
  const feat=$("#featuredGrid"); if(feat){const f=PRODUCTS.filter(p=>p.featured);feat.innerHTML=(f.length?f:PRODUCTS).slice(0,6).map(card).join("");}
  setupCatalog(); setupProduct(); setupSearch(); setupCart(); setupCheckout(); setupConsult(); setupQuoteOnly(); setupHeaderScrollSearch(); setupBackToTop(); setupFeaturedMarqueeV34(); bindAdds();
 }
+// Habilitar la consulta sin esperar a la API remota del catálogo.
+function bootEmptyAdvisor(){
+ if(!$("#consultSelection"))return;
+ try{
+   if(getCart().length===0)setupConsult();
+ }catch(_){setupConsult();}
+}
+if(document.readyState==="loading"){
+ document.addEventListener("DOMContentLoaded",bootEmptyAdvisor,{once:true});
+}else{bootEmptyAdvisor();}
 loadProducts();
 
 function setupHeaderScrollSearch(){
@@ -757,6 +767,9 @@ function renderCheckout(){
  tot.innerHTML=`${taxBreakdownHtml(total,"Subtotal neto productos")}<div class="review-total-line muted"><span>Envío</span><span>A confirmar</span></div>`;
 }
 function setupConsult(){
+ const consultRoot=$("#consultSelection");
+ if(!consultRoot || consultRoot.dataset.wtsConsultInitialized==="1")return;
+ consultRoot.dataset.wtsConsultInitialized="1";
  setupCuitInput("#consultCuit");
  setupRequiredDate("#consultDate");
  setupFileInput("#consultFiles","#consultFileList");
