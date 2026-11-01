@@ -797,8 +797,11 @@ function setupConsult(){
 
  $("#toAdvisorData")?.addEventListener("click",()=>{
    const type=$('input[name="consultType"]:checked')?.value||"mismos";
-   if(!c.length&&type==="mismos"){
-     return showFormError($("#consultError"),"No hay productos seleccionados. Elegí una alternativa o contanos qué estás buscando.");
+   // El asesoramiento admite consultas sin productos asociados.
+   // La opción inicial no debe bloquear el avance cuando el carrito está vacío.
+   if(!c.length && type==="mismos"){
+     const idea=$('input[name="consultType"][value="idea"]');
+     if(idea)idea.checked=true;
    }
    goAdvisorStep(2);
  });
