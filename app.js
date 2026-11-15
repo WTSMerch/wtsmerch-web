@@ -45,9 +45,18 @@ function toBool(value,defaultValue=true){
  if(!v)return defaultValue;
  return !["0","false","no","n"].includes(v);
 }
+function normalizeCatalogStock(p){
+ // Stock omitido o nulo no equivale a cero. Nunca inventar disponibilidad.
+ const raw=p.stock;
+ const status=String(p.stockStatus||"").toLowerCase();
+ const unknown=status==="unknown"||status==="pending"||raw===undefined||raw===null||raw===""||!Number.isFinite(Number(raw));
+ if(unknown)return {...p,stock:null,stockStatus:"unknown",canBuy:false};
+ return {...p,stock:Math.max(0,Number(raw)),stockStatus:status||"known"};
+}
 function validateCatalogProducts(list){
  const seen=new Set(),valid=[];
- list.forEach(p=>{
+ list.forEach(raw=>{
+   const p=normalizeCatalogStock(raw);
    if(!p.id||!p.name||!p.category)return;
    if(seen.has(p.id))return;
    seen.add(p.id);
