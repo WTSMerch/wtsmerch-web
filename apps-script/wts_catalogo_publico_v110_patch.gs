@@ -9,6 +9,7 @@ function wtsCatalogoPublicoCorregidoV110_() {
   const snapshot = getPublicWebCatalogV94_({view:'catalog'});
   if (!snapshot || !Array.isArray(snapshot.products)) throw new Error('Catálogo público inválido');
   const byId = {};
+  const audit = {matched:0,unmatched:0,stockKnown:0,stockUnknown:0,variantCount:0};
   getWebPublicationRows().forEach(function(r) {
     if (!publicWebYesV12_(r.PUBLICADO)) return;
     const key = String(r.KEY || [r.NOMBRE_PUBLICO,r.CATEGORIA_PUBLICA,r.MARCA_PUBLICA].join('|'));
@@ -17,7 +18,8 @@ function wtsCatalogoPublicoCorregidoV110_() {
   });
   snapshot.products.forEach(function(p) {
     const r = byId[p.id];
-    if (!r) return;
+    if (!r) { audit.unmatched++; return; }
+    audit.matched++;
     const flexible = !!r.STOCK_NO_LIMITANTE;
     const raw = r.STOCK_PUBLICO;
     const known = !flexible && raw !== '' && raw != null && Number.isFinite(Number(raw));
@@ -34,7 +36,12 @@ function wtsCatalogoPublicoCorregidoV110_() {
       .map(publicWebCleanTextV84_)
       .filter(function(v){return !!v && !/^(única|unica)$/i.test(v);});
     p.variants = Array.from(new Set(variants));
+    audit.variantCount += p.variants.length;
+    if (p.stockStatus === 'known') audit.stockKnown++; else audit.stockUnknown++;
   });
+  // Diagnóstico interno: no se incorpora al JSON enviado al sitio.
+  Logger.log('WTS V110 auditoría previa: '+JSON.stringify(audit));
+  if (audit.unmatched > 0) throw new Error('No se puede sincronizar: '+audit.unmatched+' productos sin correspondencia en publicación');
   return snapshot;
 }
 
