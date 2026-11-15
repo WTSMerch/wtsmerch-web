@@ -657,15 +657,9 @@ function setupCatalog(){
    debounce=setTimeout(()=>loadPage(false),e.type==="input"?250:0);
  }));
 
- const hasInitialFilter=!!(urlcat||urlq||urlbrand||urlcollection);
- if(hasInitialFilter){
-   loadPage(false);
- }else{
-   grid.innerHTML=groupedCatalogHtml(PRODUCTS)||`<div class="catalog-empty-state"><h3>No encontramos productos.</h3></div>`;
-   offset=PRODUCTS.length;
-   if($("#resultsCount"))$("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
-   updateScope();bindAdds();armInfiniteScroll();
- }
+ // Pedir siempre la primera página con el criterio de orden explícito.
+ // Evita mostrar un lote precargado sin orden y luego mezclarlo con el paginado.
+ loadPage(false);
 }
 function setupSearch(){
  const ov=$(".search-overlay");if(!ov)return;
