@@ -336,7 +336,10 @@ function setupFeaturedMarqueeV34(){
 // Ficha pública: datos existentes del catálogo, sin inventar stock ni variantes.
 function setupProduct(){
  const host=document.getElementById("productPage");if(!host)return;
- const id=new URLSearchParams(location.search).get("id")||"";
+ const detailParams=new URLSearchParams(location.search);
+ const id=detailParams.get("id")||"";
+ const originalVariant=detailParams.get("variant");
+ const editingCart=detailParams.has("qty")&&originalVariant!==null;
  const p=PRODUCTS.find(x=>String(x.id)===id);
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  if(!p){host.innerHTML='<div class="product-not-found"><h1>Producto no disponible</h1><a href="catalogo.html">Volver al catálogo</a></div>';return;}
@@ -346,12 +349,24 @@ function setupProduct(){
  const known=p.stock!==undefined&&p.stock!==null&&p.stock!==""&&Number.isFinite(Number(p.stock))&&p.stockStatus!=="unknown";
  const min=Math.max(1,Number(p.min)||1),net=computedNetPrice(p);
  host.innerHTML='<div class="product-detail"><a href="catalogo.html">← Volver al catálogo</a><div class="product-detail-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:32px;margin:24px 0"><section><img src="'+esc(unique[0]||"")+'" alt="'+esc(p.name)+'" style="width:100%;max-height:520px;object-fit:contain"></section><section><p>'+esc(p.category||"")+'</p><h1>'+esc(p.name)+'</h1>'+(p.desc||p.description?'<p>'+esc(p.desc||p.description)+'</p>':"")+'<p><strong>'+(net?ars(net)+" neto + IVA":"Consultar precio")+'</strong></p>'+(net?taxBreakdownHtml(net,"Precio neto por unidad"):"")+'<p>Mínimo: '+min+' unidades</p><p>'+(known?(Number(p.stock)>0?"Disponibilidad: "+Number(p.stock)+" unidades":"Sin stock"):"Disponibilidad a confirmar")+'</p>'+(variants.length?'<label for="wtsDetailVariant">Color / variante</label><select id="wtsDetailVariant">'+variants.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join("")+'</select>':"")+'<label for="wtsDetailQty">Cantidad</label><input id="wtsDetailQty" type="number" min="'+min+'" value="'+min+'"><button id="wtsDetailAdd" type="button" '+(known&&Number(p.stock)<=0?"disabled":"")+'>'+(known&&Number(p.stock)<=0?"Sin stock":"Agregar al carrito")+'</button></section></div></div>';
+ const qtyInput=host.querySelector("#wtsDetailQty"),variantInput=host.querySelector("#wtsDetailVariant");
+ if(editingCart){
+   const requestedQty=Number(detailParams.get("qty"));
+   if(Number.isInteger(requestedQty)&&requestedQty>0)qtyInput.value=String(requestedQty);
+   if(variantInput&&variants.includes(originalVariant))variantInput.value=originalVariant;
+   host.querySelector("#wtsDetailAdd").textContent="Actualizar carrito";
+ }
  host.querySelector("#wtsDetailAdd")?.addEventListener("click",()=>{
    const qty=Math.max(min,Math.floor(Number(host.querySelector("#wtsDetailQty").value)||min));
    if(known&&qty>Number(p.stock)){alert("La cantidad supera la disponibilidad indicada.");return;}
    const variant=host.querySelector("#wtsDetailVariant")?.value||"";
-   const c=getCart(),existing=c.find(x=>x.id===p.id&&(x.variant||"")===variant);
-   if(existing)existing.qty=qty;else c.push({id:p.id,qty,variant,notes:""});
+   const c=getCart();
+   const sourceIndex=editingCart?c.findIndex(x=>x.id===p.id&&(x.variant||"")===originalVariant):-1;
+   const notes=sourceIndex>=0?c[sourceIndex].notes||"":"";
+   // Reemplazar la línea editada; conservar las demás variantes del pedido.
+   if(sourceIndex>=0)c.splice(sourceIndex,1);
+   const existing=c.find(x=>x.id===p.id&&(x.variant||"")===variant);
+   if(existing)existing.qty=qty;else c.push({id:p.id,qty,variant,notes});
    saveCart(c);showCartToast(p,{qty,variant});
  });
 }
