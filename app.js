@@ -148,7 +148,7 @@ const productById=id=>PRODUCTS.find(p=>p.id===id);
 const cartLineKey=(id,variant)=>`${id}::${variant||""}`;
 const stockLimit=p=>p&&p.stockStatus!=="unknown"&&p.stock!==undefined&&p.stock!==null&&p.stock!==""&&Number.isFinite(Number(p.stock))?Math.max(0,Number(p.stock)):null;
 const cartQuantityLimit=p=>{const stock=stockLimit(p);return stock===null||stock===0?999999:stock;};
-const cartCanBuy=()=>{const c=normalizedCart();return c.length>0&&c.every(r=>{const p=productById(r.id),stock=stockLimit(p);return p&&p.canBuy!==false&&(!Array.isArray(p.modes)||p.modes.includes("buy"))&&stock!==0&&(stock===null||r.qty<=stock);});};
+const cartCanBuy=()=>{const c=normalizedCart();return c.length>0&&c.every(r=>{const p=productById(r.id),stock=stockLimit(p);return p&&p.canBuy!==false&&(!Array.isArray(p.modes)||p.modes.includes("buy"))&&stock!==null&&stock>0&&r.qty<=stock;});};
 
 function normalizedCart(){
   const raw=getCart();
