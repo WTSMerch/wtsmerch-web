@@ -180,9 +180,26 @@ function card(p){
  </article>`;
 }
 
+async function hydrateCartProducts(){
+ // El catálogo paginado no contiene necesariamente los productos del carrito.
+ // Recuperamos sus fichas sin modificar el almacenamiento local.
+ const raw=getCart();
+ if(!Array.isArray(raw))return;
+ const ids=[...new Set(raw.map(row=>typeof row==="string"?row:row&&row.id).filter(Boolean))];
+ const missing=ids.filter(id=>!productById(id));
+ if(!missing.length)return;
+ await Promise.all(missing.map(async id=>{
+  try{
+   const data=await fetchCatalogSlice({view:"product",id,limit:1});
+   const product=validateCatalogProducts(data.products||[]).find(p=>p.id===id);
+   if(product&&!productById(id))PRODUCTS.push(product);
+  }catch(e){console.warn("No se pudo recuperar un producto del carrito",id);}
+ }));
+}
 async function loadProducts(){
  const publicProducts=await loadPublicCatalog();
  PRODUCTS=document.getElementById('productPage')?publicProducts:(publicProducts.length?publicProducts:FALLBACK_PRODUCTS);
+ await hydrateCartProducts();
  initPage();
 }
 
