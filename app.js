@@ -146,12 +146,13 @@ const getCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"[]")}ca
 const saveCart=c=>{localStorage.setItem(cartKey,JSON.stringify(c));renderCart();renderCheckout();};
 const productById=id=>PRODUCTS.find(p=>p.id===id);
 const cartLineKey=(id,variant)=>`${id}::${variant||""}`;
+const stockLimit=p=>p&&p.stockStatus!=="unknown"&&p.stock!==undefined&&p.stock!==null&&p.stock!==""&&Number.isFinite(Number(p.stock))?Math.max(0,Number(p.stock)):null;
 
 function normalizedCart(){
   const raw=getCart();
   return raw.map(x=>typeof x==="string"?{id:x,qty:productById(x)?.min||1}:x)
     .filter(x=>productById(x.id))
-    .map(x=>{const p=productById(x.id);return {id:x.id,qty:Math.min(Math.max(Number(x.qty)||1,1),p?.stock||999999),variant:x.variant||p?.variants?.[0]||"",notes:x.notes||""}});
+    .map(x=>{const p=productById(x.id);return {id:x.id,qty:Math.min(Math.max(Number(x.qty)||1,1),stockLimit(p)===null?999999:stockLimit(p)),variant:x.variant||p?.variants?.[0]||"",notes:x.notes||""}});
 }
 
 function card(p){
@@ -649,16 +650,16 @@ function renderCart(){
  $$(".cart-count").forEach(x=>x.textContent=c.reduce((a,b)=>a+b.qty,0));
  if(!items)return;
  items.innerHTML=c.map((row,i)=>{const p=productById(row.id),sub=computedNetPrice(p)*row.qty,href=`producto.html?id=${encodeURIComponent(p.id)}&variant=${encodeURIComponent(row.variant||"")}&qty=${encodeURIComponent(row.qty)}`;return `<div class="cart-item">
-   <a class="cart-product-link cart-product-image" href="${href}" aria-label="Volver a ${p.name}"><img src="${p.image}" alt="${p.name}"></a><div class="cart-item-main"><a class="cart-product-link cart-product-name" href="${href}"><b>${p.name}</b></a><small>${row.variant||""}</small><small>Mínimo total del producto: ${p.min} u. · ${p.stockStatus==="unknown"?"Disponibilidad a confirmar":`Stock ${p.stock||0} u.`}</small>
-   <div class="qty-control"><button data-dec="${i}">−</button><input data-qty="${i}" type="number" min="1" max="${p.stock||0}" step="1" value="${row.qty}"><button data-inc="${i}">+</button></div><a class="cart-edit-link" href="${href}">Cambiar color / agregar variante</a></div>
+   <a class="cart-product-link cart-product-image" href="${href}" aria-label="Volver a ${p.name}"><img src="${p.image}" alt="${p.name}"></a><div class="cart-item-main"><a class="cart-product-link cart-product-name" href="${href}"><b>${p.name}</b></a><small>${row.variant||""}</small><small>Mínimo total del producto: ${p.min} u. · ${stockLimit(p)===null?"Disponibilidad a confirmar":`Stock ${stockLimit(p)} u.`}</small>
+   <div class="qty-control"><button data-dec="${i}">−</button><input data-qty="${i}" type="number" min="1" ${stockLimit(p)===null?"":`max="${stockLimit(p)}"`} step="1" value="${row.qty}"><button data-inc="${i}">+</button></div><a class="cart-edit-link" href="${href}">Cambiar color / agregar variante</a></div>
    <div class="cart-item-price"><b>${computedNetPrice(p)?ars(sub):"Consultar"}</b><button data-remove="${i}" aria-label="Quitar ${p.name} ${row.variant||""}">×</button></div></div>`}).join("");
  if(empty)empty.style.display=c.length?"none":"block";
  const total=c.reduce((a,row)=>a+computedNetPrice(productById(row.id))*row.qty,0);
  if(sum)sum.innerHTML=c.length?`${taxBreakdownHtml(total,"Subtotal neto")}<small>Los precios de los productos se muestran sin IVA. El envío, si corresponde, se confirma antes de producir.</small>`:"";
  $$("[data-remove]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.remove);saveCart(c.filter((_,idx)=>idx!==i))});
- $$("[data-inc]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.inc),r=c[i],p=productById(r.id);r.qty=Math.min(p.stock||999999,r.qty+1);saveCart(c)});
+ $$("[data-inc]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.inc),r=c[i],p=productById(r.id);r.qty=Math.min(stockLimit(p)===null?999999:stockLimit(p),r.qty+1);saveCart(c)});
  $$("[data-dec]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.dec),r=c[i],p=productById(r.id);r.qty=Math.max(1,r.qty-1);saveCart(c)});
- $$("[data-qty]").forEach(inp=>inp.onchange=()=>{const i=Number(inp.dataset.qty),r=c[i],p=productById(r.id),v=Math.max(1,Number(inp.value)||1);r.qty=Math.min(p.stock||999999,v);saveCart(c)});
+ $$("[data-qty]").forEach(inp=>inp.onchange=()=>{const i=Number(inp.dataset.qty),r=c[i],p=productById(r.id),v=Math.max(1,Number(inp.value)||1);r.qty=Math.min(stockLimit(p)===null?999999:stockLimit(p),v);saveCart(c)});
  compactCartChoices();
 }
 
