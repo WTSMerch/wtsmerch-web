@@ -741,12 +741,23 @@ function showRequestReceiptV116(selector,reply){
  if(!receipt){receipt=document.createElement("p");receipt.className="wts-request-receipt";receipt.setAttribute("role","status");const target=modal.querySelector(".flow-modal-content")||modal;target.appendChild(receipt);}
  receipt.textContent="Número de solicitud: "+String(reply.id);
 }
+const requestInFlightV117=new Set();
 async function sendWebRequestV88(payload,button){
- if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent="Enviando…"}
+ const flow=String(payload.tipo||"");
+ if(requestInFlightV117.has(flow))throw new Error("La solicitud ya se está enviando.");
+ requestInFlightV117.add(flow);
+ if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent="Enviando…";}
  try{
   const res=await fetch("api/solicitud.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  const j=await res.json(); if(!res.ok||!j?.ok)throw new Error(j?.error||"No se pudo registrar la solicitud"); return j;
- }finally{if(button){button.disabled=false;button.textContent=button.dataset.oldText||button.textContent}}
+  let j;
+  try{j=await res.json();}catch(e){throw new Error("El servidor no devolvió una confirmación válida. Consultá antes de reenviar.");}
+  if(!res.ok||j?.ok!==true)throw new Error(j?.error||"No se pudo registrar la solicitud");
+  if(typeof j.id!=="string"||!j.id.trim())throw new Error("El servidor no confirmó un número de registro. Consultá antes de reenviar.");
+  return j;
+ }finally{
+  requestInFlightV117.delete(flow);
+  if(button){button.disabled=false;button.textContent=button.dataset.oldText||button.textContent;}
+ }
 }
 function requestItemsV88(){return normalizedCart().map(r=>{const p=productById(r.id)||{};return {id:r.id,nombre:p.name||"",variante:r.variant||"",cantidad:Number(r.qty||0),precioNeto:Number(p.publicPrice||0)};});}
 function customerV88(prefix){return {nombre:$("#"+prefix+"Name")?.value.trim()||"",empresa:$("#"+prefix+"Company")?.value.trim()||"",cuit:$("#"+prefix+"Cuit")?.value.trim()||"",email:$("#"+prefix+"Email")?.value.trim()||"",telefono:$("#"+prefix+"Phone")?.value.trim()||"",direccion:$("#"+prefix+"Address")?.value.trim()||"",localidad:$("#"+prefix+"City")?.value.trim()||"",codigoPostal:$("#"+prefix+"Postal")?.value.trim()||"",fechaNecesaria:$("#"+prefix+"Date")?.value||""};}
@@ -796,7 +807,7 @@ function setupCheckout(){
    renderFinalCheckout();
    goStep(3);
  });
- $("#placeOrder")?.addEventListener("click",async e=>{if(!cartCanBuy()){alert("La compra directa no está disponible para uno o más productos. Solicitá presupuesto o contactá a un asesor.");return;}try{const receipt=await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#checkoutSuccess",receipt);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert("No pudimos registrar el pedido. Intentá nuevamente.");}});
+ $("#placeOrder")?.addEventListener("click",async e=>{if(!cartCanBuy()){alert("La compra directa no está disponible para uno o más productos. Solicitá presupuesto o contactá a un asesor.");return;}try{const receipt=await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#checkoutSuccess",receipt);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
 }
 function renderFinalCheckout(){
  const c=normalizedCart(), host=$("#finalOrderItems"), totals=$("#finalOrderTotals"), summary=$("#finalCustomerSummary");
@@ -949,7 +960,7 @@ function setupConsult(){
    goAdvisorStep(3);
  });
 
- $("#sendConsult")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#advisorSuccess",receipt);openFlowModal("#advisorSuccess");}catch(err){alert("No pudimos registrar la consulta. Intentá nuevamente.");}});
+ $("#sendConsult")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#advisorSuccess",receipt);openFlowModal("#advisorSuccess");}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
 }
 function setupQuoteOnly(){
  setupCuitInput("#quoteCuit");
@@ -1018,7 +1029,7 @@ function setupQuoteOnly(){
    if(totals)totals.innerHTML=`${taxBreakdownHtml(total,"Subtotal neto de referencia")}<small>Presupuesto sin compromiso</small>`;
    goQuoteStep(3);
  });
- $("#generateQuote")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#quoteSuccess",receipt);openFlowModal("#quoteSuccess");}catch(err){alert("No pudimos registrar la solicitud. Intentá nuevamente.");}});
+ $("#generateQuote")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#quoteSuccess",receipt);openFlowModal("#quoteSuccess");}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
 }
 
 document.addEventListener("click",e=>{
