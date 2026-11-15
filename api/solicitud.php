@@ -23,6 +23,28 @@ $type = strtoupper(trim((string)($data['tipo'] ?? '')));
 if (!in_array($type, ['COMPRA','PRESUPUESTO','ASESOR'], true)) respond(400, ['ok'=>false, 'error'=>'Tipo inválido']);
 if (!isset($data['cliente']) || !is_array($data['cliente'])) respond(400, ['ok'=>false, 'error'=>'Cliente inválido']);
 if (!isset($data['items']) || !is_array($data['items']) || count($data['items']) > 100 || ($type !== 'ASESOR' && count($data['items']) < 1)) respond(400, ['ok'=>false, 'error'=>'Productos inválidos']);
+// Validación de servidor independiente de la interfaz.
+$customer = $data['cliente'];
+foreach (['nombre','empresa','cuit','email','telefono','direccion','localidad','codigoPostal','fechaNecesaria'] as $field) {
+  if (!isset($customer[$field]) || !is_string($customer[$field]) || trim($customer[$field]) === '' || mb_strlen($customer[$field]) > 300) {
+    respond(422, ['ok'=>false,'error'=>'Falta un dato obligatorio o es inválido: '.$field]);
+  }
+}
+if (!filter_var($customer['email'], FILTER_VALIDATE_EMAIL)) respond(422, ['ok'=>false,'error'=>'Email inválido']);
+if (!preg_match('/^\\d{11}$/', preg_replace('/\\D+/', '', $customer['cuit']))) respond(422, ['ok'=>false,'error'=>'CUIT inválido']);
+$date = DateTimeImmutable::createFromFormat('!Y-m-d', $customer['fechaNecesaria']);
+if (!$date || $date->format('Y-m-d') !== $customer['fechaNecesaria'] || $date < new DateTimeImmutable('today')) respond(422, ['ok'=>false,'error'=>'Fecha necesaria inválida']);
+foreach ($data['items'] as $item) {
+  if (!is_array($item) || !is_string($item['id'] ?? null) || trim($item['id']) === '' ||
+      !isset($item['cantidad']) || !is_numeric($item['cantidad']) ||
+      (int)$item['cantidad'] != $item['cantidad'] || (int)$item['cantidad'] < 1 || (int)$item['cantidad'] > 100000) {
+    respond(422, ['ok'=>false,'error'=>'Producto o cantidad inválida']);
+  }
+}
+// El precio enviado por el navegador nunca autoriza una compra.
+if ($type === 'COMPRA') {
+  respond(409, ['ok'=>false,'error'=>'Compra directa pendiente de validación de precios, mínimos y disponibilidad en el servidor']);
+}
 $private = '/www/wts/wts-private/';
 $secret = trim((string)@file_get_contents($private . 'bridge-token'));
 $url = trim((string)@file_get_contents($private . 'apps-script-url'));
@@ -53,5 +75,5 @@ if ($body === false) respond(502, ['ok'=>false, 'error'=>'Fallo de conexión con
 if ($status < 200 || $status >= 300) respond(502, ['ok'=>false, 'error'=>'Apps Script devolvió un estado HTTP no exitoso', 'codigo_http'=>$status]);
 $reply = json_decode((string)$body, true);
 if (!is_array($reply)) respond(502, ['ok'=>false, 'error'=>'Respuesta no JSON de Apps Script']);
-if (($reply['ok'] ?? false) !== true || empty($reply['id'])) respond(502, ['ok'=>false, 'error'=>'Apps Script no confirmó el registro; revisar ejecuciones antes de reenviar']);
+if (($reply['ok'] ?? false) !== true || !is_string($reply['id'] ?? null) || trim($reply['id']) === '') respond(502, ['ok'=>false, 'error'=>'Apps Script no confirmó el registro; revisar ejecuciones antes de reenviar']);
 respond(200, ['ok'=>true, 'id'=>(string)$reply['id']]);
