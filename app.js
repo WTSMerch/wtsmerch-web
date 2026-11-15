@@ -626,12 +626,12 @@ function setupCatalog(){
    const cat=$(".catFilter:checked")?.value||"";
    const brand=$(".brandFilter:checked")?.value||"";
    const collection=$(".collectionFilter:checked")?.value||"";
-   const sort=$("#sortSelect")?.value||"";
+   const sort=$("#sortSelect")?.value||"category";
    const requestLimit=append?APPEND_LIMIT:INITIAL_LIMIT;
    try{
      const data=await fetchCatalogSlice({view:"catalog",limit:requestLimit,offset,q:term,cat,brand,collection,sort});
      const rows=validateCatalogProducts((data.products||[]).map(p=>({...p,active:p.active!==false})));
-     total=Number(data.total||rows.length);
+     total=Number.isFinite(Number(data.total))?Number(data.total):rows.length;
      if(append)PRODUCTS=PRODUCTS.concat(rows.filter(p=>!PRODUCTS.some(x=>x.id===p.id)));
      else PRODUCTS=rows;
      const html=groupedCatalogHtml(PRODUCTS);
