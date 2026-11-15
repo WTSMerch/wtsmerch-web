@@ -757,10 +757,22 @@ function showRequestReceiptV116(selector,reply){
  receipt.textContent="Número de solicitud: "+String(reply.id);
 }
 const requestInFlightV117=new Set();
+function requestTokenV117(payload){
+ const key="wts_pending_request_"+String(payload.tipo||"");
+ const fingerprint=JSON.stringify(payload);
+ try{
+  const previous=JSON.parse(sessionStorage.getItem(key)||"null");
+  if(previous&&previous.fingerprint===fingerprint&&previous.id)return previous.id;
+ }catch(e){}
+ const id="wts_"+(typeof crypto!=="undefined"&&crypto.randomUUID?crypto.randomUUID().replace(/-/g,""):String(Date.now())+"_"+Math.random().toString(36).slice(2));
+ try{sessionStorage.setItem(key,JSON.stringify({fingerprint,id}));}catch(e){}
+ return id;
+}
 async function sendWebRequestV88(payload,button){
  const flow=String(payload.tipo||"");
  if(requestInFlightV117.has(flow))throw new Error("La solicitud ya se está enviando.");
  requestInFlightV117.add(flow);
+ payload.requestId=requestTokenV117(payload);
  if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent="Enviando…";}
  try{
   const res=await fetch("api/solicitud.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
@@ -768,6 +780,7 @@ async function sendWebRequestV88(payload,button){
   try{j=await res.json();}catch(e){throw new Error("El servidor no devolvió una confirmación válida. Consultá antes de reenviar.");}
   if(!res.ok||j?.ok!==true)throw new Error(j?.error||"No se pudo registrar la solicitud");
   if(typeof j.id!=="string"||!j.id.trim())throw new Error("El servidor no confirmó un número de registro. Consultá antes de reenviar.");
+  try{sessionStorage.removeItem("wts_pending_request_"+flow);}catch(e){}
   return j;
  }finally{
   requestInFlightV117.delete(flow);
