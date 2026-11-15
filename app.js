@@ -756,6 +756,12 @@ function showRequestReceiptV116(selector,reply){
  if(!receipt){receipt=document.createElement("p");receipt.className="wts-request-receipt";receipt.setAttribute("role","status");const target=modal.querySelector(".flow-modal-content")||modal;target.appendChild(receipt);}
  receipt.textContent="Número de solicitud: "+String(reply.id);
 }
+function rejectUnsentFilesV117(selector){
+ const input=$(selector);
+ if(input&&input.files&&input.files.length){
+  throw new Error("Los archivos adjuntos aún no se transfieren al sistema. Quitalos para enviar la solicitud sin adjuntos.");
+ }
+}
 const requestInFlightV117=new Set();
 function requestTokenV117(payload){
  const key="wts_pending_request_"+String(payload.tipo||"");
@@ -835,7 +841,7 @@ function setupCheckout(){
    renderFinalCheckout();
    goStep(3);
  });
- $("#placeOrder")?.addEventListener("click",async e=>{if(!cartCanBuy()){alert("La compra directa no está disponible para uno o más productos. Solicitá presupuesto o contactá a un asesor.");return;}try{const receipt=await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#checkoutSuccess",receipt);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
+ $("#placeOrder")?.addEventListener("click",async e=>{if(!cartCanBuy()){alert("La compra directa no está disponible para uno o más productos. Solicitá presupuesto o contactá a un asesor.");return;}try{rejectUnsentFilesV117("#checkoutFiles");const receipt=await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#checkoutSuccess",receipt);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
 }
 function renderFinalCheckout(){
  const c=normalizedCart(), host=$("#finalOrderItems"), totals=$("#finalOrderTotals"), summary=$("#finalCustomerSummary");
@@ -988,7 +994,7 @@ function setupConsult(){
    goAdvisorStep(3);
  });
 
- $("#sendConsult")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#advisorSuccess",receipt);openFlowModal("#advisorSuccess");}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
+ $("#sendConsult")?.addEventListener("click",async e=>{try{rejectUnsentFilesV117("#consultFiles");const receipt=await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#advisorSuccess",receipt);openFlowModal("#advisorSuccess");}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
 }
 function setupQuoteOnly(){
  setupCuitInput("#quoteCuit");
@@ -1057,7 +1063,7 @@ function setupQuoteOnly(){
    if(totals)totals.innerHTML=`${taxBreakdownHtml(total,"Subtotal neto de referencia")}<small>Presupuesto sin compromiso</small>`;
    goQuoteStep(3);
  });
- $("#generateQuote")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#quoteSuccess",receipt);openFlowModal("#quoteSuccess");}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
+ $("#generateQuote")?.addEventListener("click",async e=>{try{rejectUnsentFilesV117("#quoteFiles");const receipt=await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#quoteSuccess",receipt);openFlowModal("#quoteSuccess");}catch(err){alert(err.message||"No se pudo confirmar el registro.");}});
 }
 
 document.addEventListener("click",e=>{
