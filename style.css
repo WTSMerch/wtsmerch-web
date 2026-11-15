@@ -1926,3 +1926,8 @@ html body #featuredGrid .featured-track-v34 > .product-card{
   display:flex!important;
   flex-shrink:0!important;
 }
+
+/* V118: secciones legibles en la grilla del catálogo */
+#catalogGrid .catalog-category-heading{grid-column:1/-1;width:100%;margin:26px 0 6px;padding:0 0 12px;border-bottom:1px solid #dfe7eb;color:#14202c;font-size:clamp(1.15rem,2vw,1.5rem);font-weight:750;letter-spacing:-.02em}
+#catalogGrid .catalog-category-heading:first-child{margin-top:4px}
+#catalogGrid .catalog-category-heading span{display:inline-block;border-left:4px solid #409f8c;padding-left:14px}
