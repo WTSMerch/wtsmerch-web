@@ -540,7 +540,7 @@ function setupCatalog(){
  if(urlcollection){const el=$(`.collectionFilter[value="${CSS.escape(urlcollection)}"]`);if(el)el.checked=true}
 
  const categoryName=p=>String(p.category||"Sin categoría").trim()||"Sin categoría";
- const groupedCatalogHtml=items=>{
+ const groupedCatalogHtml=items=>{\n   const sort=$("#sortSelect")?.value||"category";\n   if(sort!=="category")return items.map(card).join("");
    let previous="";
    return [...items].sort((a,b)=>categoryName(a).localeCompare(categoryName(b),"es")||String(a.name||"").localeCompare(String(b.name||""),"es")).map(p=>{
      const cat=categoryName(p),heading=cat!==previous?`<div class="catalog-category-heading" role="heading" aria-level="2"><span>${cat.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</span></div>`:"";
