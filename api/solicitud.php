@@ -26,7 +26,7 @@ if (!isset($data['items']) || !is_array($data['items']) || count($data['items'])
 // Validación de servidor independiente de la interfaz.
 $customer = $data['cliente'];
 foreach (['nombre','empresa','cuit','email','telefono','direccion','localidad','codigoPostal','fechaNecesaria'] as $field) {
-  if (!isset($customer[$field]) || !is_string($customer[$field]) || trim($customer[$field]) === '' || mb_strlen($customer[$field]) > 300) {
+  if (!isset($customer[$field]) || !is_string($customer[$field]) || trim($customer[$field]) === '' || strlen($customer[$field]) > 900) {
     respond(422, ['ok'=>false,'error'=>'Falta un dato obligatorio o es inválido: '.$field]);
   }
 }
