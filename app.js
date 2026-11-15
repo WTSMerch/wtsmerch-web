@@ -530,6 +530,14 @@ function setupCatalog(){
  if(urlbrand){const el=$(`.brandFilter[value="${CSS.escape(urlbrand)}"]`);if(el)el.checked=true}
  if(urlcollection){const el=$(`.collectionFilter[value="${CSS.escape(urlcollection)}"]`);if(el)el.checked=true}
 
+ const categoryName=p=>String(p.category||"Sin categoría").trim()||"Sin categoría";
+ const groupedCatalogHtml=items=>{
+   let previous="";
+   return [...items].sort((a,b)=>categoryName(a).localeCompare(categoryName(b),"es")||String(a.name||"").localeCompare(String(b.name||""),"es")).map(p=>{
+     const cat=categoryName(p),heading=cat!==previous?`<div class="catalog-category-heading" role="heading" aria-level="2"><span>${cat.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</span></div>`:"";
+     previous=cat;return heading+card(p);
+   }).join("");
+ };
  const INITIAL_LIMIT=24, APPEND_LIMIT=12;
  let offset=0,loading=false,total=Number(CATALOG_META.total||0),observer=null;
 
@@ -617,9 +625,8 @@ function setupCatalog(){
      total=Number(data.total||rows.length);
      if(append)PRODUCTS=PRODUCTS.concat(rows.filter(p=>!PRODUCTS.some(x=>x.id===p.id)));
      else PRODUCTS=rows;
-     const html=rows.map(card).join("");
-     if(append)grid.insertAdjacentHTML("beforeend",html);
-     else grid.innerHTML=html||`<div class="catalog-empty-state"><span class="eyebrow">SIN RESULTADOS</span><h3>No encontramos productos.</h3><p>Probá quitando filtros o realizando otra búsqueda.</p></div>`;
+     const html=groupedCatalogHtml(PRODUCTS);
+     grid.innerHTML=html||`<div class="catalog-empty-state"><span class="eyebrow">SIN RESULTADOS</span><h3>No encontramos productos.</h3><p>Probá quitando filtros o realizando otra búsqueda.</p></div>`;
      offset+=rows.length;
      if($("#resultsCount"))$("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
      updateScope();bindAdds();
@@ -645,7 +652,7 @@ function setupCatalog(){
  if(hasInitialFilter){
    loadPage(false);
  }else{
-   grid.innerHTML=PRODUCTS.map(card).join("")||`<div class="catalog-empty-state"><h3>No encontramos productos.</h3></div>`;
+   grid.innerHTML=groupedCatalogHtml(PRODUCTS)||`<div class="catalog-empty-state"><h3>No encontramos productos.</h3></div>`;
    offset=PRODUCTS.length;
    if($("#resultsCount"))$("#resultsCount").textContent=`${total} producto${total===1?"":"s"}`;
    updateScope();bindAdds();armInfiniteScroll();
