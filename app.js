@@ -734,6 +734,13 @@ function openFlowModal(id){
 }
 
 
+function showRequestReceiptV116(selector,reply){
+ const modal=$(selector);
+ if(!modal||!reply?.id)return;
+ let receipt=modal.querySelector(".wts-request-receipt");
+ if(!receipt){receipt=document.createElement("p");receipt.className="wts-request-receipt";receipt.setAttribute("role","status");const target=modal.querySelector(".flow-modal-content")||modal;target.appendChild(receipt);}
+ receipt.textContent="Número de solicitud: "+String(reply.id);
+}
 async function sendWebRequestV88(payload,button){
  if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent="Enviando…"}
  try{
@@ -789,7 +796,7 @@ function setupCheckout(){
    renderFinalCheckout();
    goStep(3);
  });
- $("#placeOrder")?.addEventListener("click",async e=>{if(!cartCanBuy()){alert("La compra directa no está disponible para uno o más productos. Solicitá presupuesto o contactá a un asesor.");return;}try{await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert("No pudimos registrar el pedido. Intentá nuevamente.");}});
+ $("#placeOrder")?.addEventListener("click",async e=>{if(!cartCanBuy()){alert("La compra directa no está disponible para uno o más productos. Solicitá presupuesto o contactá a un asesor.");return;}try{const receipt=await sendWebRequestV88({tipo:"COMPRA",cliente:customerV88("checkout"),entregaCanal:$('input[name="delivery"]:checked')?.value||"",comentarios:$("#checkoutComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#checkoutSuccess",receipt);openFlowModal("#checkoutSuccess");localStorage.removeItem(CART_KEY);}catch(err){alert("No pudimos registrar el pedido. Intentá nuevamente.");}});
 }
 function renderFinalCheckout(){
  const c=normalizedCart(), host=$("#finalOrderItems"), totals=$("#finalOrderTotals"), summary=$("#finalCustomerSummary");
@@ -942,7 +949,7 @@ function setupConsult(){
    goAdvisorStep(3);
  });
 
- $("#sendConsult")?.addEventListener("click",async e=>{try{await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#advisorSuccess");}catch(err){alert("No pudimos registrar la consulta. Intentá nuevamente.");}});
+ $("#sendConsult")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"ASESOR",cliente:customerV88("consult"),entregaCanal:$('input[name="consultType"]:checked')?.value||"",presupuestoObjetivo:$("#consultBudget")?.value.trim()||"",comentarios:$("#consultComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#advisorSuccess",receipt);openFlowModal("#advisorSuccess");}catch(err){alert("No pudimos registrar la consulta. Intentá nuevamente.");}});
 }
 function setupQuoteOnly(){
  setupCuitInput("#quoteCuit");
@@ -1011,7 +1018,7 @@ function setupQuoteOnly(){
    if(totals)totals.innerHTML=`${taxBreakdownHtml(total,"Subtotal neto de referencia")}<small>Presupuesto sin compromiso</small>`;
    goQuoteStep(3);
  });
- $("#generateQuote")?.addEventListener("click",async e=>{try{await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);openFlowModal("#quoteSuccess");}catch(err){alert("No pudimos registrar la solicitud. Intentá nuevamente.");}});
+ $("#generateQuote")?.addEventListener("click",async e=>{try{const receipt=await sendWebRequestV88({tipo:"PRESUPUESTO",cliente:customerV88("quote"),entregaCanal:$('input[name="quoteChannel"]:checked')?.value||"",presupuestoObjetivo:$("#quoteTarget")?.value.trim()||"",comentarios:$("#quoteComments")?.value.trim()||"",items:requestItemsV88()},e.currentTarget);showRequestReceiptV116("#quoteSuccess",receipt);openFlowModal("#quoteSuccess");}catch(err){alert("No pudimos registrar la solicitud. Intentá nuevamente.");}});
 }
 
 document.addEventListener("click",e=>{
