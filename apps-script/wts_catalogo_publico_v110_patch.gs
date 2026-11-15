@@ -15,10 +15,9 @@ function wtsCatalogoPublicoCorregidoV110_() {
     const id = publicWebIdV12_(key);
     byId[id] = r;
   });
-  let enriched = 0, missing = 0;
   snapshot.products.forEach(function(p) {
     const r = byId[p.id];
-    if (!r) { missing++; return; }
+    if (!r) return;
     const flexible = !!r.STOCK_NO_LIMITANTE;
     const raw = r.STOCK_PUBLICO;
     const known = !flexible && raw !== '' && raw != null && Number.isFinite(Number(raw));
@@ -35,9 +34,7 @@ function wtsCatalogoPublicoCorregidoV110_() {
       .map(publicWebCleanTextV84_)
       .filter(function(v){return !!v && !/^(única|unica)$/i.test(v);});
     p.variants = Array.from(new Set(variants));
-    enriched++;
   });
-  snapshot.wtsDataAudit = {enriched:enriched,missing:missing};
   return snapshot;
 }
 
@@ -48,7 +45,7 @@ function auditarCatalogoCorregidoV110_() {
     return {id:p.id,name:p.name,variants:p.variants,stock:p.stock,
       stockStatus:p.stockStatus};
   });
-  const result = {ok:true,total:data.products.length,audit:data.wtsDataAudit,sample:sample};
+  const result = {ok:true,total:data.products.length,stockConocido:data.products.filter(function(p){return p.stockStatus==='known';}).length,stockAConfirmar:data.products.filter(function(p){return p.stockStatus==='unknown';}).length,sample:sample};
   Logger.log(JSON.stringify(result,null,2));
   return result;
 }
